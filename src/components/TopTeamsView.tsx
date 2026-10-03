@@ -1,173 +1,178 @@
 import React, { useState } from 'react';
 import { TeamProfile } from '../types';
+import { getTeamLogoSrc } from '../utils/teamLogo';
 
 interface TopTeamsViewProps {
   teams: TeamProfile[];
   onSelectTeam: (team: TeamProfile) => void;
-  onRespectTeam: (teamId: string) => void;
-  lang: 'bn' | 'en';
+  onRespectTeam?: (teamId: string) => void;
+  lang?: 'bn' | 'en';
 }
+
+type TeamFilterCategory = 'All' | 'Legends' | 'Active' | 'Underground';
 
 export const TopTeamsView: React.FC<TopTeamsViewProps> = ({
   teams,
   onSelectTeam,
-  onRespectTeam,
-  lang,
 }) => {
-  const [filterStatus, setFilterStatus] = useState<string>('All');
-  const [search, setSearch] = useState('');
+  const [selectedCategory, setSelectedCategory] = useState<TeamFilterCategory>('All');
+  const [searchQuery, setSearchQuery] = useState('');
 
-  const filteredTeams = teams
-    .filter((t) => {
-      const matchesStatus = filterStatus === 'All' || t.status === filterStatus;
-      const matchesQuery =
-        t.name.toLowerCase().includes(search.toLowerCase()) ||
-        t.alias.toLowerCase().includes(search.toLowerCase()) ||
-        t.leader.toLowerCase().includes(search.toLowerCase());
-      return matchesStatus && matchesQuery;
-    })
-    .sort((a, b) => b.respectCount - a.respectCount);
+  // Filter teams by category and search query
+  const filteredTeams = teams.filter((t) => {
+    // Category match
+    const categoryMatch =
+      selectedCategory === 'All' ||
+      (selectedCategory === 'Legends' && t.status === 'Legendary') ||
+      (selectedCategory === 'Active' && t.status === 'Active') ||
+      (selectedCategory === 'Underground' && (t.status === 'Underground' || t.status === 'Retired'));
+
+    // Search query match (name, alias, leader, whatsapp)
+    const q = searchQuery.toLowerCase().trim();
+    const queryMatch =
+      q === '' ||
+      t.name.toLowerCase().includes(q) ||
+      t.alias.toLowerCase().includes(q) ||
+      t.leader.toLowerCase().includes(q) ||
+      (t.whatsapp && t.whatsapp.toLowerCase().includes(q));
+
+    return categoryMatch && queryMatch;
+  });
 
   return (
-    <div className="max-w-6xl mx-auto px-4 sm:px-6 py-8 sm:py-12">
-      {/* View Header */}
-      <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 pb-6 border-b border-zinc-200">
+    <div className="w-full bg-[#FAF8F6] min-h-[calc(100vh-64px)] px-4 sm:px-6 py-5 select-none text-left">
+      {/* 1. Header: Top Teams Title & Bangladesh National Flag (Exact Match) */}
+      <div className="flex items-center justify-between gap-4">
         <div>
-          <div className="flex items-center gap-2">
-            <span className="w-2.5 h-2.5 rounded-full bg-red-600 animate-pulse" />
-            <span className="text-xs font-bold text-red-600 tracking-wider uppercase">
-              {lang === 'bn' ? 'ঐতিহাসিক সাইবার টিম তালিকা' : 'Historic Cyber Teams'}
-            </span>
-          </div>
-          <h2 className="text-2xl sm:text-3xl font-black text-zinc-950 mt-1">
-            {lang === 'bn' ? 'শীর্ষ স্প্যামার ও সাইবার টিমসমূহ' : 'Top Teams & Syndicates'}
-          </h2>
-          <p className="text-xs sm:text-sm text-zinc-600 mt-1 max-w-xl font-['Hind_Siliguri',sans-serif]">
-            {lang === 'bn'
-              ? 'অতীত থেকে আজ অবধি সাইবার ময়দানে নেতৃত্ব দেওয়া ঐতিহাসিক দলগুলোর রেকর্ড ও তাদের কার্যক্রম।'
-              : 'Historical archive of cyber groups, underground syndicates, and mass report teams.'}
+          <h1 className="text-2xl sm:text-3xl font-black text-black tracking-tight">
+            Top Teams
+          </h1>
+          <p className="text-sm font-normal text-zinc-900 mt-0.5">
+            All Legendary Terms in one arena
           </p>
         </div>
 
-        {/* Filter controls */}
-        <div className="flex flex-wrap items-center gap-2">
-          {['All', 'Legendary', 'Active', 'Underground'].map((status) => (
-            <button
-              key={status}
-              onClick={() => setFilterStatus(status)}
-              className={`px-3 py-1.5 text-xs font-bold rounded-lg transition-colors ${
-                filterStatus === status
-                  ? 'bg-black text-white'
-                  : 'bg-zinc-100 text-zinc-600 hover:bg-zinc-200'
-              }`}
-            >
-              {status}
-            </button>
-          ))}
+        {/* Bangladesh National Flag Badge (Matches Screenshot) */}
+        <div className="w-16 h-10 sm:w-18 sm:h-11 bg-[#006a4e] rounded-xs relative flex items-center justify-center shrink-0 shadow-2xs border border-zinc-200/50">
+          <div className="w-6 h-6 rounded-full bg-[#f42a41] shadow-2xs" />
         </div>
       </div>
 
-      {/* Internal Search bar */}
-      <div className="mt-6 mb-8 max-w-md">
+      {/* 2. Search Bar with bordered magnifying glass icon */}
+      <div className="mt-4 flex items-center rounded-lg border border-zinc-400 bg-white overflow-hidden shadow-2xs focus-within:border-black transition-colors">
         <input
           type="text"
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
-          placeholder={lang === 'bn' ? 'টিমের নাম দিয়ে ফিল্টার করুন...' : 'Filter by team name or leader...'}
-          className="w-full px-3.5 py-2 text-xs sm:text-sm border border-zinc-300 rounded-lg focus:ring-2 focus:ring-black focus:outline-none"
+          value={searchQuery}
+          onChange={(e) => setSearchQuery(e.target.value)}
+          placeholder="Search your name"
+          className="flex-1 h-11 px-3.5 text-sm sm:text-base text-black placeholder:text-zinc-400 focus:outline-none"
         />
+        <div className="w-11 h-11 border-l border-zinc-400 flex items-center justify-center text-zinc-800 shrink-0">
+          <svg
+            className="w-5 h-5 text-black stroke-[2.2]"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              d="M21 21l-4.35-4.35m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z"
+            />
+          </svg>
+        </div>
       </div>
 
-      {/* Teams Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
-        {filteredTeams.map((team, idx) => {
-          const rank = idx + 1;
-          const isTopThree = rank <= 3;
+      {/* 3. Filter Buttons: All, Legends, Active, Underground */}
+      <div className="mt-3 flex items-center gap-2 overflow-x-auto no-scrollbar py-1">
+        {(['All', 'Legends', 'Active', 'Underground'] as TeamFilterCategory[]).map((cat) => {
+          const isActive = selectedCategory === cat;
+          return (
+            <button
+              key={cat}
+              onClick={() => setSelectedCategory(cat)}
+              className={`px-3.5 py-1 text-xs sm:text-sm font-bold rounded-md border transition-all whitespace-nowrap active:scale-95 ${
+                isActive
+                  ? 'bg-[#333333] text-white border-zinc-900 shadow-2xs'
+                  : 'bg-white text-zinc-800 border-zinc-300 hover:bg-zinc-50'
+              }`}
+            >
+              {cat}
+            </button>
+          );
+        })}
+      </div>
+
+      {/* 4. Team Cards List (Matches Screenshot) */}
+      <div className="mt-4 space-y-3.5 pb-10">
+        {filteredTeams.map((team) => {
+          const logoSrc = getTeamLogoSrc(team);
+          const whatsappNumber = team.whatsapp || '+601114303075';
+          const activePeriod = team.founded ? `Since ${team.founded} Till now` : 'Since 2014 Till now';
 
           return (
             <div
               key={team.id}
               onClick={() => onSelectTeam(team)}
-              className="group cursor-pointer bg-white border border-zinc-200 hover:border-black rounded-xl p-5 sm:p-6 transition-all duration-200 hover:shadow-md relative flex flex-col justify-between"
+              className="bg-white rounded-2xl p-3.5 sm:p-4.5 border border-zinc-200/80 shadow-2xs flex items-center justify-between gap-3 text-left transition-all hover:border-zinc-300 cursor-pointer"
             >
-              <div>
-                {/* Top Row: Rank & Status */}
-                <div className="flex items-center justify-between gap-3 text-xs mb-3">
-                  <div className="flex items-center gap-2">
-                    <span
-                      className={`w-7 h-7 rounded-md flex items-center justify-center font-black tabular-nums ${
-                        isTopThree
-                          ? 'bg-black text-white'
-                          : 'bg-zinc-100 text-zinc-700'
-                      }`}
-                    >
-                      #{rank}
-                    </span>
-                    <span className="font-extrabold text-zinc-900 text-sm tracking-tight">
-                      [{team.alias}]
-                    </span>
-                  </div>
-                  
-                  {/* Clean unboxed metadata separator per anti-slop guidelines */}
-                  <div className="flex items-center gap-1.5 text-zinc-500 font-medium text-xs">
-                    <span>Est. {team.founded}</span>
-                    <span aria-hidden="true">·</span>
-                    <span className={team.status === 'Legendary' ? 'text-red-600 font-bold' : ''}>
-                      {team.status}
-                    </span>
-                  </div>
+              {/* Left: Avatar + Details */}
+              <div className="flex items-center gap-3 sm:gap-4 flex-1">
+                {/* Circular Avatar / Team Logo */}
+                <div className="w-16 h-16 sm:w-18 sm:h-18 rounded-full overflow-hidden border-2 border-zinc-800 bg-black shrink-0 shadow-2xs flex items-center justify-center p-0.5">
+                  <img
+                    src={logoSrc}
+                    alt={team.name}
+                    className="w-full h-full object-cover"
+                    onError={(e) => {
+                      (e.target as HTMLImageElement).src = '/nct_logo.svg';
+                    }}
+                  />
                 </div>
 
-                {/* Team Name */}
-                <h3 className="text-lg sm:text-xl font-black text-zinc-950 group-hover:text-red-600 transition-colors">
-                  {team.name}
-                </h3>
-
-                {/* Manifesto */}
-                <p className="mt-2 text-xs sm:text-sm text-zinc-600 line-clamp-2 leading-relaxed font-['Hind_Siliguri',sans-serif]">
-                  "{lang === 'bn' ? team.manifestoBangla : team.manifestoEnglish}"
-                </p>
-
-                {/* Operations & Key Stats */}
-                <div className="mt-4 pt-3 border-t border-zinc-100 flex items-center gap-4 text-xs text-zinc-600">
-                  <div>
-                    <span className="text-zinc-400 block text-[10px]">Leader</span>
-                    <span className="font-semibold text-zinc-900">{team.leader}</span>
-                  </div>
-                  <div className="border-l border-zinc-200 pl-4">
-                    <span className="text-zinc-400 block text-[10px]">Members</span>
-                    <span className="font-semibold text-zinc-900 tabular-nums">~{team.memberCount}+</span>
-                  </div>
-                  <div className="border-l border-zinc-200 pl-4">
-                    <span className="text-zinc-400 block text-[10px]">Archived Ops</span>
-                    <span className="font-semibold text-zinc-900 tabular-nums">{team.totalOps}</span>
-                  </div>
+                {/* Details */}
+                <div className="space-y-0.5">
+                  <h3 className="text-xl sm:text-2xl font-black text-black leading-tight tracking-tight">
+                    {team.name}
+                  </h3>
+                  <p className="text-xs sm:text-sm font-medium text-black leading-snug">
+                    Founder: {team.leader || 'Raj Alamin'}
+                  </p>
+                  <p className="text-xs sm:text-sm font-normal text-black leading-snug">
+                    {activePeriod}
+                  </p>
+                  <p className="text-xs sm:text-sm font-normal text-black leading-snug">
+                    Whatsapp : {whatsappNumber}
+                  </p>
                 </div>
               </div>
 
-              {/* Bottom Actions */}
-              <div className="mt-5 pt-3 border-t border-zinc-100 flex items-center justify-between">
-                <span className="text-xs font-bold text-red-600 group-hover:underline">
-                  {lang === 'bn' ? 'পূর্ণাঙ্গ রেকর্ড দেখুন →' : 'View Full Dossier →'}
-                </span>
-
-                <button
-                  type="button"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    onRespectTeam(team.id);
-                  }}
-                  className="flex items-center gap-1.5 px-3 py-1 bg-zinc-50 hover:bg-red-50 text-zinc-700 hover:text-red-700 border border-zinc-200 rounded-lg text-xs font-bold transition-all active:scale-95"
+              {/* Right: Triangle Arrow Icon ▶ */}
+              <button
+                type="button"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onSelectTeam(team);
+                }}
+                className="group p-2 flex items-center justify-center text-zinc-400 hover:text-black transition-colors shrink-0"
+                aria-label={`View ${team.name} wiki`}
+              >
+                <svg
+                  className="w-4 h-4 fill-zinc-400 group-hover:fill-black transition-colors"
+                  viewBox="0 0 24 24"
                 >
-                  <span>🏴 Respect</span>
-                  <span className="font-mono tabular-nums text-red-600 font-extrabold">
-                    {team.respectCount.toLocaleString()}
-                  </span>
-                </button>
-              </div>
+                  <path d="M8 5v14l11-7z" />
+                </svg>
+              </button>
             </div>
           );
         })}
+
+        {filteredTeams.length === 0 && (
+          <div className="bg-white rounded-2xl p-8 text-center border border-zinc-200 text-zinc-500 text-sm">
+            কোনো টিম পাওয়া যায়নি। অন্য নাম দিয়ে অনুসন্ধান করুন।
+          </div>
+        )}
       </div>
     </div>
   );

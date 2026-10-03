@@ -1,0 +1,174 @@
+{
+  "entities": {
+    "SpammerProfile": {
+      "title": "Spammer Profile",
+      "description": "Public and recorded cyber spammer/operative profiles.",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "name": { "type": "string" },
+        "alias": { "type": "string" },
+        "realName": { "type": "string" },
+        "phone": { "type": "string" },
+        "email": { "type": "string" },
+        "whatsapp": { "type": "string" },
+        "facebookUrl": { "type": "string" },
+        "bio": { "type": "string" },
+        "status": { "type": "string" },
+        "rating": { "type": "number" },
+        "casesSolved": { "type": "number" },
+        "reportCount": { "type": "number" },
+        "speciality": { "type": "string" },
+        "location": { "type": "string" },
+        "avatarUrl": { "type": "string" },
+        "createdAt": { "type": "string" }
+      },
+      "required": ["id", "name", "alias"]
+    },
+    "TeamProfile": {
+      "title": "Team Profile",
+      "description": "Historical cyber teams and underground syndicates.",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "name": { "type": "string" },
+        "alias": { "type": "string" },
+        "founded": { "type": "string" },
+        "origin": { "type": "string" },
+        "status": { "type": "string" },
+        "memberCount": { "type": "number" },
+        "totalOps": { "type": "number" },
+        "respectCount": { "type": "number" },
+        "manifestoBangla": { "type": "string" },
+        "manifestoEnglish": { "type": "string" },
+        "leader": { "type": "string" },
+        "whatsapp": { "type": "string" },
+        "avatarUrl": { "type": "string" }
+      },
+      "required": ["id", "name", "leader"]
+    },
+    "UserAccount": {
+      "title": "User Account",
+      "description": "DarkHUB user accounts and permissions.",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "name": { "type": "string" },
+        "email": { "type": "string" },
+        "password": { "type": "string" },
+        "role": { "type": "string", "enum": ["admin", "user"] },
+        "avatarUrl": { "type": "string" },
+        "createdAt": { "type": "string" }
+      },
+      "required": ["id", "email", "role"]
+    },
+    "UserBioSubmission": {
+      "title": "User Bio Submission",
+      "description": "Submissions for spammer / operative wiki listing.",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "userId": { "type": "string" },
+        "userName": { "type": "string" },
+        "nickName": { "type": "string" },
+        "realName": { "type": "string" },
+        "phone": { "type": "string" },
+        "email": { "type": "string" },
+        "facebookLink": { "type": "string" },
+        "about": { "type": "string" },
+        "profileImage": { "type": "string" },
+        "status": { "type": "string", "enum": ["pending", "approved", "rejected"] },
+        "submittedAt": { "type": "string" }
+      },
+      "required": ["id", "userName", "nickName"]
+    },
+    "TeamBioSubmission": {
+      "title": "Team Bio Submission",
+      "description": "Submissions for Team Wiki and Top Teams inclusion.",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "userId": { "type": "string" },
+        "userName": { "type": "string" },
+        "teamName": { "type": "string" },
+        "startedOn": { "type": "string" },
+        "founder": { "type": "string" },
+        "about": { "type": "string" },
+        "whatsapp": { "type": "string" },
+        "profileImage": { "type": "string" },
+        "applyForTopTeam": { "type": "boolean" },
+        "status": { "type": "string", "enum": ["pending", "approved", "rejected"] },
+        "submittedAt": { "type": "string" }
+      },
+      "required": ["id", "teamName", "founder"]
+    },
+    "WorkSubmission": {
+      "title": "Work Submission",
+      "description": "Proof of work / mass report task submissions.",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "userId": { "type": "string" },
+        "userName": { "type": "string" },
+        "title": { "type": "string" },
+        "selectPlatform": { "type": "string" },
+        "typeOfWork": { "type": "string" },
+        "successDate": { "type": "string" },
+        "selectTeam": { "type": "string" },
+        "victimOrTargetName": { "type": "string" },
+        "targetUrl": { "type": "string" },
+        "description": { "type": "string" },
+        "postViews": { "type": "number" },
+        "postLink": { "type": "string" },
+        "status": { "type": "string", "enum": ["pending", "approved", "rejected"] },
+        "submittedAt": { "type": "string" }
+      },
+      "required": ["id", "title", "selectPlatform"]
+    },
+    "TargetPillar": {
+      "title": "Target Pillar",
+      "description": "Active targets and operational alerts.",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "title": { "type": "string" },
+        "category": { "type": "string" },
+        "targetCount": { "type": "number" },
+        "status": { "type": "string" },
+        "threatLevel": { "type": "string" },
+        "description": { "type": "string" }
+      },
+      "required": ["id", "title"]
+    }
+  },
+  "firestore": {
+    "/spammers/{spammerId}": {
+      "schema": "SpammerProfile",
+      "description": "Collection of spammer and cyber operative profiles."
+    },
+    "/teams/{teamId}": {
+      "schema": "TeamProfile",
+      "description": "Collection of cyber teams and syndicates."
+    },
+    "/users/{userId}": {
+      "schema": "UserAccount",
+      "description": "Collection of registered user accounts and admins."
+    },
+    "/user_bios/{bioId}": {
+      "schema": "UserBioSubmission",
+      "description": "User submitted operative bios."
+    },
+    "/team_bios/{teamBioId}": {
+      "schema": "TeamBioSubmission",
+      "description": "User submitted team profiles."
+    },
+    "/work_submissions/{workId}": {
+      "schema": "WorkSubmission",
+      "description": "Task and report submissions."
+    },
+    "/target_pillars/{pillarId}": {
+      "schema": "TargetPillar",
+      "description": "Targets and operations."
+    }
+  }
+}

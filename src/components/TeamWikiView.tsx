@@ -1,5 +1,6 @@
 import React from 'react';
 import { TeamProfile } from '../types';
+import { getTeamLogoSrc } from '../utils/teamLogo';
 
 interface TeamWikiViewProps {
   team: TeamProfile;
@@ -14,11 +15,8 @@ export const TeamWikiView: React.FC<TeamWikiViewProps> = ({
   onOpenMenu,
   onRespect,
 }) => {
-  // Use custom team logo if available, or nct_logo.svg for National Cyber Team
-  const teamLogoSrc =
-    team.id === 'team-nct' || team.name.toLowerCase().includes('national cyber')
-      ? '/nct_logo.svg'
-      : '/nct_logo.svg';
+  // Use team's dedicated vector logo
+  const teamLogoSrc = getTeamLogoSrc(team);
 
   const foundedYear = team.founded || '2024';
 
@@ -113,6 +111,13 @@ export const TeamWikiView: React.FC<TeamWikiViewProps> = ({
               <p className="text-base sm:text-lg font-medium text-black tracking-tight">
                 Since {foundedYear}
               </p>
+
+              {team.whatsapp && (
+                <p className="text-xs sm:text-sm font-medium text-emerald-900 mt-1 flex items-center justify-center gap-1.5">
+                  <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+                  <span>Whatsapp : {team.whatsapp}</span>
+                </p>
+              )}
             </div>
 
             {/* 3. "About" Section Title (Exact match) */}

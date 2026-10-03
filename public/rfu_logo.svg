@@ -1,0 +1,31 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" width="200" height="200">
+  <defs>
+    <radialGradient id="rfuBg" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#240004"/>
+      <stop offset="75%" stop-color="#100002"/>
+      <stop offset="100%" stop-color="#000000"/>
+    </radialGradient>
+    <linearGradient id="rfuRed" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#FF1A35"/>
+      <stop offset="100%" stop-color="#7A000E"/>
+    </linearGradient>
+  </defs>
+
+  <circle cx="100" cy="100" r="98" fill="url(#rfuBg)"/>
+  <circle cx="100" cy="100" r="94" fill="none" stroke="#222222" stroke-width="2"/>
+  <circle cx="100" cy="100" r="90" fill="none" stroke="url(#rfuRed)" stroke-width="3" stroke-dasharray="6 3"/>
+
+  <!-- Cyber Shield -->
+  <polygon points="100,42 144,66 144,122 100,162 56,122 56,66" fill="#140003" stroke="url(#rfuRed)" stroke-width="2.5"/>
+
+  <!-- RFU Text -->
+  <text x="100" y="106" text-anchor="middle" font-family="Arial Black, Impact, sans-serif" font-weight="900" font-size="32" fill="#ffffff" letter-spacing="2">
+    RFU
+  </text>
+  <text x="100" y="124" text-anchor="middle" font-family="Arial Black, sans-serif" font-weight="900" font-size="10" fill="#FF1A35" letter-spacing="2">
+    RED FORCE
+  </text>
+  <text x="100" y="142" text-anchor="middle" font-family="Arial, sans-serif" font-weight="700" font-size="7.5" fill="#ffffff" opacity="0.8" letter-spacing="1">
+    UNDERGROUND UNIT
+  </text>
+</svg>

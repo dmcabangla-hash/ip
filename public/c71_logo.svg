@@ -1,0 +1,48 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" width="200" height="200">
+  <defs>
+    <radialGradient id="c71Bg" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#002b1b"/>
+      <stop offset="70%" stop-color="#00140c"/>
+      <stop offset="100%" stop-color="#000000"/>
+    </radialGradient>
+    <linearGradient id="c71Green" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#009944"/>
+      <stop offset="100%" stop-color="#004d22"/>
+    </linearGradient>
+    <linearGradient id="c71Red" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#FF2A2A"/>
+      <stop offset="100%" stop-color="#B30000"/>
+    </linearGradient>
+  </defs>
+
+  <!-- Outer Rings -->
+  <circle cx="100" cy="100" r="98" fill="url(#c71Bg)"/>
+  <circle cx="100" cy="100" r="94" fill="none" stroke="#222222" stroke-width="2"/>
+  <circle cx="100" cy="100" r="90" fill="none" stroke="url(#c71Green)" stroke-width="3" stroke-dasharray="8 4"/>
+  <circle cx="100" cy="100" r="84" fill="none" stroke="#00552b" stroke-width="1.5"/>
+
+  <!-- Red Sun in Center Background -->
+  <circle cx="100" cy="100" r="42" fill="url(#c71Red)" opacity="0.35"/>
+
+  <!-- Cyber Shield Crest -->
+  <polygon points="100,38 148,64 148,118 100,162 52,118 52,64" fill="#04120a" stroke="url(#c71Green)" stroke-width="3"/>
+  <polygon points="100,46 140,68 140,114 100,152 60,114 60,68" fill="none" stroke="url(#c71Red)" stroke-width="1.5" stroke-dasharray="4 2"/>
+
+  <!-- Falcon / Cyber Wings -->
+  <path d="M 100 52 L 120 70 L 140 68 L 132 86 L 145 98 L 128 106 L 100 88 L 72 106 L 55 98 L 68 86 L 60 68 L 80 70 Z" fill="url(#c71Green)" opacity="0.7"/>
+
+  <!-- Main 'CYBER' Top Text -->
+  <text x="100" y="94" text-anchor="middle" font-family="Arial Black, Impact, sans-serif" font-weight="900" font-size="18" fill="#ffffff" letter-spacing="3">
+    CYBER
+  </text>
+
+  <!-- Main '71' Central Bold Text -->
+  <text x="100" y="128" text-anchor="middle" font-family="Arial Black, Impact, sans-serif" font-weight="900" font-size="34" fill="#FF2A2A" letter-spacing="1">
+    71
+  </text>
+
+  <!-- Motto: WE ARE ONE -->
+  <text x="100" y="145" text-anchor="middle" font-family="Arial, sans-serif" font-weight="800" font-size="7.5" fill="#00FF66" letter-spacing="1.5">
+    WE ARE ONE
+  </text>
+</svg>

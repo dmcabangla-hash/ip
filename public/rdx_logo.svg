@@ -1,0 +1,49 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" width="200" height="200">
+  <defs>
+    <radialGradient id="rdxBg" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#2a0000"/>
+      <stop offset="70%" stop-color="#110000"/>
+      <stop offset="100%" stop-color="#000000"/>
+    </radialGradient>
+    <linearGradient id="rdxFlame" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#FF4500"/>
+      <stop offset="50%" stop-color="#DC143C"/>
+      <stop offset="100%" stop-color="#8B0000"/>
+    </linearGradient>
+  </defs>
+
+  <!-- Outer Hexagonal / Circular Shield -->
+  <circle cx="100" cy="100" r="98" fill="url(#rdxBg)"/>
+  <circle cx="100" cy="100" r="94" fill="none" stroke="#333333" stroke-width="2"/>
+  <circle cx="100" cy="100" r="90" fill="none" stroke="url(#rdxFlame)" stroke-width="3" stroke-dasharray="10 4"/>
+  <circle cx="100" cy="100" r="84" fill="none" stroke="#551111" stroke-width="1.5"/>
+
+  <!-- Hazard Cyber Cross & Wings -->
+  <g fill="url(#rdxFlame)" opacity="0.35">
+    <polygon points="100,28 112,50 135,45 125,68 150,75 130,95 155,105 125,120 140,145 115,135 100,165 85,135 60,145 75,120 45,105 70,95 50,75 75,68 65,45 88,50"/>
+  </g>
+
+  <!-- Central Danger Emblem / Target Shield -->
+  <polygon points="100,42 145,68 145,122 100,158 55,122 55,68" fill="#140202" stroke="url(#rdxFlame)" stroke-width="3"/>
+  
+  <!-- Cyber Crosshair -->
+  <line x1="100" y1="50" x2="100" y2="72" stroke="#FF4500" stroke-width="2.5"/>
+  <line x1="100" y1="128" x2="100" y2="150" stroke="#FF4500" stroke-width="2.5"/>
+  <line x1="62" y1="100" x2="80" y2="100" stroke="#FF4500" stroke-width="2.5"/>
+  <line x1="120" y1="100" x2="138" y2="100" stroke="#FF4500" stroke-width="2.5"/>
+
+  <!-- Main 'RDX' Text -->
+  <text x="100" y="104" text-anchor="middle" font-family="Arial Black, Impact, sans-serif" font-weight="900" font-size="34" fill="#ffffff" letter-spacing="2">
+    RDX
+  </text>
+
+  <!-- Subtitle: ZONE -->
+  <text x="100" y="120" text-anchor="middle" font-family="Arial Black, sans-serif" font-weight="900" font-size="11" fill="#FF4500" letter-spacing="3">
+    ZONE
+  </text>
+
+  <!-- Cyber Defense Motto -->
+  <text x="100" y="140" text-anchor="middle" font-family="Arial, sans-serif" font-weight="700" font-size="7" fill="#ffffff" letter-spacing="1" opacity="0.8">
+    TACTICAL CYBER WING
+  </text>
+</svg>

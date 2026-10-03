@@ -24,6 +24,23 @@ import { SpammerProfileModal } from './components/SpammerProfileModal';
 import { TeamDetailModal } from './components/TeamDetailModal';
 import { AboutView } from './components/AboutView';
 import { LegalView } from './components/LegalViews';
+import { getTeamLogoSrc } from './utils/teamLogo';
+import {
+  saveSpammerToFirestore,
+  saveTeamToFirestore,
+  saveUserBioSubmissionToFirestore,
+  saveTeamBioSubmissionToFirestore,
+  saveWorkSubmissionToFirestore,
+  saveUserAccountToFirestore,
+  subscribeToSpammers,
+  subscribeToTeams,
+  subscribeToWorkSubmissions,
+  subscribeToUserBios,
+  subscribeToTeamBios,
+  subscribeToUsers,
+  seedFirestoreIfEmpty,
+  testFirestoreConnection,
+} from './firebase';
 
 export default function App() {
   // Navigation State
@@ -226,9 +243,63 @@ export default function App() {
   }, [spammers]);
 
   // -------------------------------------------------------------
+  // REAL-TIME FIRESTORE SYNCHRONIZATION
+  // -------------------------------------------------------------
+  useEffect(() => {
+    testFirestoreConnection();
+    seedFirestoreIfEmpty(INITIAL_SPAMMERS, INITIAL_TEAMS, users);
+
+    const unsubSpammers = subscribeToSpammers((cloudSpammers) => {
+      if (cloudSpammers && cloudSpammers.length > 0) {
+        setSpammers(cloudSpammers);
+      }
+    });
+
+    const unsubTeams = subscribeToTeams((cloudTeams) => {
+      if (cloudTeams && cloudTeams.length > 0) {
+        setTeams(cloudTeams);
+      }
+    });
+
+    const unsubWorks = subscribeToWorkSubmissions((cloudWorks) => {
+      if (cloudWorks && cloudWorks.length > 0) {
+        setWorks(cloudWorks);
+      }
+    });
+
+    const unsubBios = subscribeToUserBios((cloudBios) => {
+      if (cloudBios && cloudBios.length > 0) {
+        setBioSubmissions(cloudBios);
+      }
+    });
+
+    const unsubTeamBios = subscribeToTeamBios((cloudTeamBios) => {
+      if (cloudTeamBios && cloudTeamBios.length > 0) {
+        setTeamSubmissions(cloudTeamBios);
+      }
+    });
+
+    const unsubUsers = subscribeToUsers((cloudUsers) => {
+      if (cloudUsers && cloudUsers.length > 0) {
+        setUsers(cloudUsers);
+      }
+    });
+
+    return () => {
+      unsubSpammers();
+      unsubTeams();
+      unsubWorks();
+      unsubBios();
+      unsubTeamBios();
+      unsubUsers();
+    };
+  }, []);
+
+  // -------------------------------------------------------------
   // REAL-TIME WIKI PROFILE SELECTION (Single Source of Truth)
   // -------------------------------------------------------------
-  const [selectedWikiSpammerId, setSelectedWikiSpammerId] = useState<string | null>(null);
+  const selectedWikiSpammerId_state = useState<string | null>(null);
+  const [selectedWikiSpammerId, setSelectedWikiSpammerId] = selectedWikiSpammerId_state;
   const [selectedWikiTeamId, setSelectedWikiTeamId] = useState<string | null>(null);
 
   // Directly derive active profiles from state so all additions/deletions update in real-time
@@ -249,6 +320,7 @@ export default function App() {
         status: 'active',
         registeredAt: '2026-01-01',
       };
+      saveUserAccountToFirestore(adminUser);
       setCurrentUser(adminUser);
       setCurrentPage('admin-dashboard');
       return true;
@@ -276,6 +348,7 @@ export default function App() {
       registeredAt: new Date().toISOString().slice(0, 10),
     };
     setUsers((prev) => [...prev, newUser]);
+    saveUserAccountToFirestore(newUser);
     setCurrentUser(newUser);
     setCurrentPage('user-dashboard');
     return true;
@@ -298,6 +371,7 @@ export default function App() {
       registeredAt: new Date().toISOString().slice(0, 10),
     };
     setUsers((prev) => [...prev, newUser]);
+    saveUserAccountToFirestore(newUser);
     setCurrentUser(newUser);
     setCurrentPage('user-dashboard');
   };
@@ -320,6 +394,7 @@ export default function App() {
       submittedAt: new Date().toISOString().slice(0, 10),
     };
     setBioSubmissions((prev) => [newSubmission, ...prev]);
+    saveUserBioSubmissionToFirestore(newSubmission);
 
     // Update live SpammerProfile so their Spammer Wiki immediately updates in real-time
     setSpammers((prev) => {
@@ -349,6 +424,8 @@ export default function App() {
         whatsapp: bioData.whatsapp || (existingIdx >= 0 ? prev[existingIdx].whatsapp : '+601114303075'),
       };
 
+      saveSpammerToFirestore(updatedSpammer);
+
       if (existingIdx >= 0) {
         const copy = [...prev];
         copy[existingIdx] = updatedSpammer;
@@ -372,6 +449,7 @@ export default function App() {
       submittedAt: new Date().toISOString().slice(0, 10),
     };
     setTeamSubmissions((prev) => [newSubmission, ...prev]);
+    saveTeamBioSubmissionToFirestore(newSubmission);
 
     // Update or sync live TeamProfile so Team Wiki immediately updates in real-time
     setTeams((prev) => {
@@ -396,6 +474,8 @@ export default function App() {
         manifestoBangla: teamData.about,
         manifestoEnglish: '', // Prevent duplicate manifesto text
         leader: teamData.founder,
+        avatarUrl: teamData.profileImage || (existingIdx >= 0 && prev[existingIdx].avatarUrl && !prev[existingIdx].avatarUrl.includes('raj_alamin') ? prev[existingIdx].avatarUrl : getTeamLogoSrc(teamData.teamName)),
+        whatsapp: teamData.whatsapp || (existingIdx >= 0 ? prev[existingIdx].whatsapp : '+601114303075'),
         keyMembers: teamData.activists && teamData.activists.length > 0
           ? teamData.activists
           : (existingIdx >= 0 ? prev[existingIdx].keyMembers : [teamData.founder]),
@@ -403,6 +483,8 @@ export default function App() {
           ? teamData.notableOps
           : (existingIdx >= 0 ? prev[existingIdx].notableOps : []),
       };
+
+      saveTeamToFirestore(updatedTeam);
 
       if (existingIdx >= 0) {
         const copy = [...prev];
@@ -426,6 +508,7 @@ export default function App() {
       submittedAt: new Date().toISOString().slice(0, 10),
     };
     setWorks((prev) => [newWork, ...prev]);
+    saveWorkSubmissionToFirestore(newWork);
   };
 
   // -------------------------------------------------------------
@@ -435,10 +518,12 @@ export default function App() {
     setUsers((prev) =>
       prev.map((u) => {
         if (u.id === userId) {
-          return {
+          const updated: UserAccount = {
             ...u,
             status: u.status === 'active' ? 'suspended' : 'active',
           };
+          saveUserAccountToFirestore(updated);
+          return updated;
         }
         return u;
       })
@@ -449,9 +534,11 @@ export default function App() {
     const sub = bioSubmissions.find((b) => b.id === submissionId);
     if (!sub) return;
 
+    const updatedSub: UserBioSubmission = { ...sub, status: 'approved' };
     setBioSubmissions((prev) =>
-      prev.map((b) => (b.id === submissionId ? { ...b, status: 'approved' } : b))
+      prev.map((b) => (b.id === submissionId ? updatedSub : b))
     );
+    saveUserBioSubmissionToFirestore(updatedSub);
 
     const newSpammerProfile: SpammerProfile = {
       id: `spammer-${Date.now()}`,
@@ -470,21 +557,28 @@ export default function App() {
       avatarUrl: sub.profileImage,
     };
     setSpammers((prev) => [newSpammerProfile, ...prev]);
+    saveSpammerToFirestore(newSpammerProfile);
   };
 
   const handleRejectBio = (submissionId: string) => {
+    const sub = bioSubmissions.find((b) => b.id === submissionId);
+    if (!sub) return;
+    const updatedSub: UserBioSubmission = { ...sub, status: 'rejected' };
     setBioSubmissions((prev) =>
-      prev.map((b) => (b.id === submissionId ? { ...b, status: 'rejected' } : b))
+      prev.map((b) => (b.id === submissionId ? updatedSub : b))
     );
+    saveUserBioSubmissionToFirestore(updatedSub);
   };
 
   const handleApproveTeam = (submissionId: string) => {
     const sub = teamSubmissions.find((t) => t.id === submissionId);
     if (!sub) return;
 
+    const updatedSub: TeamBioSubmission = { ...sub, status: 'approved' };
     setTeamSubmissions((prev) =>
-      prev.map((t) => (t.id === submissionId ? { ...t, status: 'approved' } : t))
+      prev.map((t) => (t.id === submissionId ? updatedSub : t))
     );
+    saveTeamBioSubmissionToFirestore(updatedSub);
 
     const newTeam: TeamProfile = {
       id: `team-${Date.now()}`,
@@ -503,22 +597,38 @@ export default function App() {
       notableOps: sub.notableOps || [],
     };
     setTeams((prev) => [newTeam, ...prev]);
+    saveTeamToFirestore(newTeam);
   };
 
   const handleRejectTeam = (submissionId: string) => {
+    const sub = teamSubmissions.find((t) => t.id === submissionId);
+    if (!sub) return;
+    const updatedSub: TeamBioSubmission = { ...sub, status: 'rejected' };
     setTeamSubmissions((prev) =>
-      prev.map((t) => (t.id === submissionId ? { ...t, status: 'rejected' } : t))
+      prev.map((t) => (t.id === submissionId ? updatedSub : t))
     );
+    saveTeamBioSubmissionToFirestore(updatedSub);
   };
 
   const handleApproveWork = (workId: string) => {
     setWorks((prev) =>
-      prev.map((w) => (w.id === workId ? { ...w, status: 'approved', postViews: w.postViews + 10 } : w))
+      prev.map((w) => {
+        if (w.id === workId) {
+          const updated: WorkSubmission = { ...w, status: 'approved', postViews: w.postViews + 10 };
+          saveWorkSubmissionToFirestore(updated);
+          return updated;
+        }
+        return w;
+      })
     );
   };
 
   const handleRejectWork = (workId: string) => {
-    setWorks((prev) => prev.filter((w) => w.id !== workId));
+    const w = works.find((item) => item.id === workId);
+    if (w) {
+      saveWorkSubmissionToFirestore({ ...w, status: 'rejected' });
+    }
+    setWorks((prev) => prev.filter((item) => item.id !== workId));
   };
 
   // -------------------------------------------------------------
@@ -526,13 +636,27 @@ export default function App() {
   // -------------------------------------------------------------
   const handleRespectSpammer = (id: string) => {
     setSpammers((prev) =>
-      prev.map((s) => (s.id === id ? { ...s, respectCount: s.respectCount + 1 } : s))
+      prev.map((s) => {
+        if (s.id === id) {
+          const updated = { ...s, respectCount: s.respectCount + 1 };
+          saveSpammerToFirestore(updated);
+          return updated;
+        }
+        return s;
+      })
     );
   };
 
   const handleRespectTeam = (id: string) => {
     setTeams((prev) =>
-      prev.map((t) => (t.id === id ? { ...t, respectCount: t.respectCount + 1 } : t))
+      prev.map((t) => {
+        if (t.id === id) {
+          const updated = { ...t, respectCount: t.respectCount + 1 };
+          saveTeamToFirestore(updated);
+          return updated;
+        }
+        return t;
+      })
     );
   };
 
@@ -647,7 +771,7 @@ export default function App() {
                   setSelectedWikiTeamId(null);
                   setSearchQuery('');
                 }}
-                showRedBar={currentPage !== 'home' && currentPage !== 'top-spammers'}
+                showRedBar={currentPage !== 'home' && currentPage !== 'top-spammers' && currentPage !== 'top-teams'}
               />
             )}
 

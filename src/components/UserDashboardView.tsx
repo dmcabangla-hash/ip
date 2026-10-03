@@ -7,6 +7,7 @@ import {
   SpammerProfile,
   TeamProfile,
 } from '../types';
+import { getTeamLogoSrc } from '../utils/teamLogo';
 
 interface UserDashboardViewProps {
   currentUser: UserAccount;
@@ -142,6 +143,9 @@ export const UserDashboardView: React.FC<UserDashboardViewProps> = ({
   const [teamFounder, setTeamFounder] = useState(
     currentTeamProfile?.leader || currentUser.name || 'Raj Alamin'
   );
+  const [teamWhatsapp, setTeamWhatsapp] = useState(
+    currentTeamProfile?.whatsapp || '+601114303075'
+  );
   const [teamAbout, setTeamAbout] = useState(
     currentTeamProfile?.manifestoBangla ||
       currentTeamProfile?.manifestoEnglish ||
@@ -220,6 +224,9 @@ export const UserDashboardView: React.FC<UserDashboardViewProps> = ({
       setTeamName(currentTeamProfile.name);
       setTeamStartedOn(currentTeamProfile.founded);
       setTeamFounder(currentTeamProfile.leader);
+      if (currentTeamProfile.whatsapp) {
+        setTeamWhatsapp(currentTeamProfile.whatsapp);
+      }
       setTeamAbout(currentTeamProfile.manifestoBangla || currentTeamProfile.manifestoEnglish);
       if (currentTeamProfile.notableOps) {
         setTeamOps(currentTeamProfile.notableOps);
@@ -273,6 +280,7 @@ export const UserDashboardView: React.FC<UserDashboardViewProps> = ({
       startedOn: teamStartedOn.trim(),
       founder: teamFounder.trim(),
       about: teamAbout.trim(),
+      whatsapp: teamWhatsapp.trim(),
       profileImage: teamProfileImage || undefined,
       applyForTopTeam,
       memberCount: teamMemberCount,
@@ -284,7 +292,7 @@ export const UserDashboardView: React.FC<UserDashboardViewProps> = ({
   };
 
   const activeAvatar = bioProfileImage || currentSpammerProfile?.avatarUrl || currentUser.avatarUrl || '/raj_alamin.png';
-  const activeTeamLogo = teamProfileImage || '/nct_logo.svg';
+  const activeTeamLogo = teamProfileImage || getTeamLogoSrc(teamName);
 
   return (
     <div className="w-full min-h-screen bg-white flex flex-col justify-between select-none">
@@ -738,6 +746,20 @@ export const UserDashboardView: React.FC<UserDashboardViewProps> = ({
                     value={teamFounder}
                     onChange={(e) => setTeamFounder(e.target.value)}
                     placeholder="Founder or Commander Name"
+                    className="flex-1 h-9 sm:h-10 px-3 bg-white rounded-md border border-zinc-200 text-black font-medium focus:outline-none focus:ring-1 focus:ring-black"
+                  />
+                </div>
+
+                {/* Team WhatsApp Number (Appears on Top Teams & Team Wiki) */}
+                <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-4">
+                  <label className="w-28 text-sm sm:text-base font-bold text-black shrink-0">
+                    WhatsApp No
+                  </label>
+                  <input
+                    type="text"
+                    value={teamWhatsapp}
+                    onChange={(e) => setTeamWhatsapp(e.target.value)}
+                    placeholder="e.g. +601114303075"
                     className="flex-1 h-9 sm:h-10 px-3 bg-white rounded-md border border-zinc-200 text-black font-medium focus:outline-none focus:ring-1 focus:ring-black"
                   />
                 </div>

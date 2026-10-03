@@ -44,6 +44,8 @@ export interface TeamProfile {
   id: string;
   name: string;
   alias: string;
+  avatarUrl?: string;
+  whatsapp?: string;
   founded: string;
   origin: string;
   status: TeamStatus;
@@ -111,6 +113,7 @@ export interface TeamBioSubmission {
   startedOn: string;
   founder: string;
   about: string;
+  whatsapp?: string;
   profileImage?: string;
   applyForTopTeam: boolean;
   memberCount?: number;

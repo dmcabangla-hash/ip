@@ -1,0 +1,48 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" width="200" height="200">
+  <defs>
+    <radialGradient id="bcaBg" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#0a1a12"/>
+      <stop offset="75%" stop-color="#040c08"/>
+      <stop offset="100%" stop-color="#000000"/>
+    </radialGradient>
+    <linearGradient id="bcaGold" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#FFD700"/>
+      <stop offset="100%" stop-color="#B8860B"/>
+    </linearGradient>
+    <linearGradient id="bcaGreen" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#006A4E"/>
+      <stop offset="100%" stop-color="#003828"/>
+    </linearGradient>
+  </defs>
+
+  <!-- Outer Rings -->
+  <circle cx="100" cy="100" r="98" fill="url(#bcaBg)"/>
+  <circle cx="100" cy="100" r="94" fill="none" stroke="#222222" stroke-width="2"/>
+  <circle cx="100" cy="100" r="90" fill="none" stroke="url(#bcaGold)" stroke-width="2.5" stroke-dasharray="6 3"/>
+  <circle cx="100" cy="100" r="84" fill="none" stroke="#004d33" stroke-width="1.5"/>
+
+  <!-- Army Star on top -->
+  <polygon points="100,26 104,36 114,37 106,44 109,54 100,48 91,54 94,44 86,37 96,36" fill="url(#bcaGold)"/>
+
+  <!-- Military Cyber Shield -->
+  <polygon points="100,48 145,68 145,120 100,160 55,120 55,68" fill="#03140c" stroke="url(#bcaGold)" stroke-width="2.5"/>
+  <circle cx="100" cy="100" r="28" fill="#F42A41" opacity="0.3"/>
+
+  <!-- Swords / Cyber Cross -->
+  <path d="M 75 75 L 125 125 M 125 75 L 75 125" stroke="url(#bcaGold)" stroke-width="2" opacity="0.4"/>
+
+  <!-- BCA Text -->
+  <text x="100" y="104" text-anchor="middle" font-family="Arial Black, Impact, sans-serif" font-weight="900" font-size="32" fill="#ffffff" letter-spacing="2">
+    BCA
+  </text>
+
+  <!-- CYBER ARMY Text -->
+  <text x="100" y="122" text-anchor="middle" font-family="Arial Black, sans-serif" font-weight="900" font-size="9" fill="url(#bcaGold)" letter-spacing="2">
+    CYBER ARMY
+  </text>
+
+  <!-- Subtitle -->
+  <text x="100" y="142" text-anchor="middle" font-family="Arial, sans-serif" font-weight="700" font-size="7" fill="#00FF88" letter-spacing="1.5">
+    ESTD. 2011 · DEFENDER
+  </text>
+</svg>

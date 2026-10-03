@@ -1,0 +1,51 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Spammers Collection
+    match /spammers/{spammerId} {
+      allow read: if true;
+      allow write: if true;
+    }
+    
+    // Teams Collection
+    match /teams/{teamId} {
+      allow read: if true;
+      allow write: if true;
+    }
+    
+    // Users Collection
+    match /users/{userId} {
+      allow read: if true;
+      allow write: if true;
+    }
+
+    // User Bio Submissions
+    match /user_bios/{bioId} {
+      allow read: if true;
+      allow write: if true;
+    }
+
+    // Team Bio Submissions
+    match /team_bios/{teamBioId} {
+      allow read: if true;
+      allow write: if true;
+    }
+
+    // Work Submissions
+    match /work_submissions/{workId} {
+      allow read: if true;
+      allow write: if true;
+    }
+
+    // Target Pillars
+    match /target_pillars/{pillarId} {
+      allow read: if true;
+      allow write: if true;
+    }
+
+    // Test connection doc
+    match /test/{docId} {
+      allow read, write: if true;
+    }
+  }
+}

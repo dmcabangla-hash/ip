@@ -1,0 +1,36 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" width="200" height="200">
+  <defs>
+    <radialGradient id="agclBg" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#141c24"/>
+      <stop offset="75%" stop-color="#080c10"/>
+      <stop offset="100%" stop-color="#000000"/>
+    </radialGradient>
+    <linearGradient id="agclGold" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#FFD700"/>
+      <stop offset="100%" stop-color="#C59B27"/>
+    </linearGradient>
+  </defs>
+
+  <circle cx="100" cy="100" r="98" fill="url(#agclBg)"/>
+  <circle cx="100" cy="100" r="94" fill="none" stroke="#222222" stroke-width="2"/>
+  <circle cx="100" cy="100" r="90" fill="none" stroke="url(#agclGold)" stroke-width="2.5" stroke-dasharray="8 3"/>
+
+  <!-- Globe / Latitude lines -->
+  <circle cx="100" cy="100" r="50" fill="none" stroke="#334155" stroke-width="1.5"/>
+  <ellipse cx="100" cy="100" rx="30" ry="50" fill="none" stroke="#334155" stroke-width="1.2"/>
+  <line x1="50" y1="100" x2="150" y2="100" stroke="#334155" stroke-width="1.2"/>
+
+  <!-- Mask / Shield Outline -->
+  <path d="M 100 48 C 80 48 70 65 68 85 C 65 110 80 135 100 155 C 120 135 135 110 132 85 C 130 65 120 48 100 48 Z" fill="#03080e" stroke="url(#agclGold)" stroke-width="2.5" opacity="0.95"/>
+
+  <!-- AGCL Text -->
+  <text x="100" y="106" text-anchor="middle" font-family="Arial Black, Impact, sans-serif" font-weight="900" font-size="28" fill="#ffffff" letter-spacing="2">
+    AGCL
+  </text>
+  <text x="100" y="124" text-anchor="middle" font-family="Arial Black, sans-serif" font-weight="900" font-size="8.5" fill="url(#agclGold)" letter-spacing="1.5">
+    ANONGHOST
+  </text>
+  <text x="100" y="140" text-anchor="middle" font-family="Arial, sans-serif" font-weight="700" font-size="7" fill="#94A3B8" letter-spacing="1">
+    CYBER LEGION
+  </text>
+</svg>
