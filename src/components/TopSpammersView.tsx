@@ -1,189 +1,175 @@
 import React, { useState } from 'react';
-import { SpammerProfile, SpammerSpecialty } from '../types';
+import { SpammerProfile } from '../types';
 
 interface TopSpammersViewProps {
   spammers: SpammerProfile[];
   onSelectSpammer: (spammer: SpammerProfile) => void;
-  onRespectSpammer: (spammerId: string) => void;
-  lang: 'bn' | 'en';
+  onRespectSpammer?: (spammerId: string) => void;
+  lang?: 'bn' | 'en';
 }
 
-const SPECIALTY_FILTERS: (SpammerSpecialty | 'All')[] = [
-  'All',
-  'Mass Report',
-  'Traffic Flooding / DDoS',
-  'Page Takeover',
-  'Deface & Recon',
-  'Botnet & Automation',
-  'OSINT & Doxx',
-];
+type SpammerFilterCategory = 'All' | 'Legends' | 'Active' | 'Underground';
 
 export const TopSpammersView: React.FC<TopSpammersViewProps> = ({
   spammers,
   onSelectSpammer,
-  onRespectSpammer,
-  lang,
 }) => {
-  const [selectedSpecialty, setSelectedSpecialty] = useState<string>('All');
-  const [query, setQuery] = useState('');
+  const [selectedCategory, setSelectedCategory] = useState<SpammerFilterCategory>('All');
+  const [searchQuery, setSearchQuery] = useState('');
 
-  const filteredSpammers = spammers
-    .filter((s) => {
-      const matchesSpec =
-        selectedSpecialty === 'All' || s.specialty.includes(selectedSpecialty as SpammerSpecialty);
-      const matchesQuery =
-        s.alias.toLowerCase().includes(query.toLowerCase()) ||
-        s.name.toLowerCase().includes(query.toLowerCase()) ||
-        s.team.toLowerCase().includes(query.toLowerCase());
-      return matchesSpec && matchesQuery;
-    })
-    .sort((a, b) => b.respectCount - a.respectCount);
+  // Filter spammers by search query and category (Legends, Active, Underground)
+  const filteredSpammers = spammers.filter((s) => {
+    // Category match
+    const categoryMatch =
+      selectedCategory === 'All' ||
+      (selectedCategory === 'Legends' && s.status === 'Legend') ||
+      (selectedCategory === 'Active' && s.status === 'Active') ||
+      (selectedCategory === 'Underground' && (s.status === 'Undercover' || s.status === 'Inactive'));
+
+    // Search query match (name, alias, team, or whatsapp)
+    const q = searchQuery.toLowerCase().trim();
+    const queryMatch =
+      q === '' ||
+      s.name.toLowerCase().includes(q) ||
+      s.alias.toLowerCase().includes(q) ||
+      s.team.toLowerCase().includes(q) ||
+      (s.whatsapp && s.whatsapp.toLowerCase().includes(q));
+
+    return categoryMatch && queryMatch;
+  });
 
   return (
-    <div className="max-w-6xl mx-auto px-4 sm:px-6 py-8 sm:py-12">
-      {/* Header */}
-      <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 pb-6 border-b border-zinc-200">
+    <div className="w-full bg-[#FAF8F6] min-h-[calc(100vh-64px)] px-4 sm:px-6 py-5 select-none text-left">
+      {/* 1. Header: Top Spammers Title & Bangladesh Flag */}
+      <div className="flex items-center justify-between gap-4">
         <div>
-          <div className="flex items-center gap-2">
-            <span className="w-2.5 h-2.5 rounded-full bg-red-600 animate-pulse" />
-            <span className="text-xs font-bold text-red-600 tracking-wider uppercase">
-              {lang === 'bn' ? 'হল অব ফেম ও কিংবদন্তি' : 'Hall of Fame & Operatives'}
-            </span>
-          </div>
-          <h2 className="text-2xl sm:text-3xl font-black text-zinc-950 mt-1">
-            {lang === 'bn' ? 'শীর্ষ ইতিহাসখ্যাত স্প্যামারবৃন্দ' : 'Top Spammers & Tacticians'}
-          </h2>
-          <p className="text-xs sm:text-sm text-zinc-600 mt-1 max-w-xl font-['Hind_Siliguri',sans-serif]">
-            {lang === 'bn'
-              ? 'সাইবার স্পেসে মাস রিপোর্ট, ট্রাফিক নিয়ন্ত্রণ ও নিরাপত্তা সুরক্ষায় স্মরণীয় স্প্যামারদের তালিকা।'
-              : 'Verified records of legendary cyber operatives, mass reporters, and system tacticians.'}
+          <h1 className="text-2xl sm:text-3xl font-black text-black tracking-tight">
+            Top Spammers
+          </h1>
+          <p className="text-sm font-normal text-zinc-900 mt-0.5">
+            All Legends in one place
           </p>
         </div>
 
-        {/* Search */}
-        <div className="w-full md:w-72">
-          <input
-            type="text"
-            value={query}
-            onChange={(e) => setQuery(e.target.value)}
-            placeholder={lang === 'bn' ? 'স্প্যামার বা টিম খুঁজুন...' : 'Search spammer alias...'}
-            className="w-full px-3.5 py-2 text-xs sm:text-sm border border-zinc-300 rounded-lg focus:ring-2 focus:ring-black focus:outline-none"
-          />
+        {/* Bangladesh National Flag Badge (Matches Screenshot) */}
+        <div className="w-16 h-10 sm:w-18 sm:h-11 bg-[#006a4e] rounded-xs relative flex items-center justify-center shrink-0 shadow-2xs border border-zinc-200/50">
+          <div className="w-6 h-6 rounded-full bg-[#f42a41] shadow-2xs" />
         </div>
       </div>
 
-      {/* Specialty Filter Bar */}
-      <div className="py-4 flex items-center gap-1.5 overflow-x-auto no-scrollbar">
-        {SPECIALTY_FILTERS.map((spec) => (
-          <button
-            key={spec}
-            onClick={() => setSelectedSpecialty(spec)}
-            className={`px-3 py-1.5 text-xs font-bold rounded-lg transition-colors whitespace-nowrap shrink-0 ${
-              selectedSpecialty === spec
-                ? 'bg-black text-white'
-                : 'bg-zinc-100 text-zinc-600 hover:bg-zinc-200'
-            }`}
+      {/* 2. Search Bar with bordered magnifying glass icon */}
+      <div className="mt-4 flex items-center rounded-lg border border-zinc-400 bg-white overflow-hidden shadow-2xs focus-within:border-black transition-colors">
+        <input
+          type="text"
+          value={searchQuery}
+          onChange={(e) => setSearchQuery(e.target.value)}
+          placeholder="Search your name"
+          className="flex-1 h-11 px-3.5 text-sm sm:text-base text-black placeholder:text-zinc-400 focus:outline-none"
+        />
+        <div className="w-11 h-11 border-l border-zinc-400 flex items-center justify-center text-zinc-800 shrink-0">
+          <svg
+            className="w-5 h-5 text-black stroke-[2.2]"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
           >
-            {spec}
-          </button>
-        ))}
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              d="M21 21l-4.35-4.35m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z"
+            />
+          </svg>
+        </div>
       </div>
 
-      {/* Spammer Cards Grid */}
-      <div className="mt-4 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
-        {filteredSpammers.map((spammer, idx) => {
-          const rank = idx + 1;
-          const isTopThree = rank <= 3;
+      {/* 3. Filter Buttons: All, Legends, Active, Underground */}
+      <div className="mt-3 flex items-center gap-2 overflow-x-auto no-scrollbar py-1">
+        {(['All', 'Legends', 'Active', 'Underground'] as SpammerFilterCategory[]).map((cat) => {
+          const isActive = selectedCategory === cat;
+          return (
+            <button
+              key={cat}
+              onClick={() => setSelectedCategory(cat)}
+              className={`px-3.5 py-1 text-xs sm:text-sm font-bold rounded-md border transition-all whitespace-nowrap active:scale-95 ${
+                isActive
+                  ? 'bg-[#333333] text-white border-zinc-900 shadow-2xs'
+                  : 'bg-white text-zinc-800 border-zinc-300 hover:bg-zinc-50'
+              }`}
+            >
+              {cat}
+            </button>
+          );
+        })}
+      </div>
+
+      {/* 4. Spammer Cards List */}
+      <div className="mt-4 space-y-3.5 pb-10">
+        {filteredSpammers.map((spammer) => {
+          const avatar = spammer.avatarUrl || '/raj_alamin.png';
+          const whatsappNumber = spammer.whatsapp || '+601114303075';
 
           return (
             <div
               key={spammer.id}
-              onClick={() => onSelectSpammer(spammer)}
-              className="group cursor-pointer bg-white border border-zinc-200 hover:border-black rounded-xl p-5 transition-all duration-200 hover:shadow-md flex flex-col justify-between"
+              className="bg-white rounded-2xl p-3.5 sm:p-4.5 border border-zinc-200/80 shadow-2xs flex items-center justify-between gap-3 text-left transition-all hover:border-zinc-300"
             >
-              <div>
-                {/* Top Bar inside card: Rank, Status, Verified badge */}
-                <div className="flex items-center justify-between gap-2 mb-3">
-                  <div className="flex items-center gap-2">
-                    <span
-                      className={`w-6 h-6 rounded flex items-center justify-center text-xs font-black tabular-nums ${
-                        isTopThree ? 'bg-black text-white' : 'bg-zinc-100 text-zinc-700'
-                      }`}
-                    >
-                      #{rank}
-                    </span>
-                    <span className="text-xs font-bold text-zinc-500">
-                      {spammer.origin}
-                    </span>
-                  </div>
-
-                  {spammer.status === 'Legend' && (
-                    <span className="text-[11px] font-extrabold text-red-600 bg-red-50 px-2 py-0.5 rounded border border-red-200">
-                      LEGEND
-                    </span>
-                  )}
+              {/* Left: Avatar + Details */}
+              <div 
+                onClick={() => onSelectSpammer(spammer)}
+                className="flex items-center gap-3 sm:gap-4 flex-1 cursor-pointer"
+              >
+                {/* Circular Avatar */}
+                <div className="w-16 h-16 sm:w-18 sm:h-18 rounded-full overflow-hidden border border-zinc-300 bg-zinc-100 shrink-0 shadow-2xs">
+                  <img
+                    src={avatar}
+                    alt={spammer.name}
+                    className="w-full h-full object-cover"
+                    onError={(e) => {
+                      (e.target as HTMLImageElement).src = '/raj_alamin.png';
+                    }}
+                  />
                 </div>
 
-                {/* Alias & Real Name */}
-                <div className="flex items-baseline gap-2">
-                  <h3 className="text-lg font-black text-zinc-950 group-hover:text-red-600 transition-colors">
-                    {spammer.alias}
+                {/* Details */}
+                <div className="space-y-0.5">
+                  <h3 className="text-xl sm:text-2xl font-black text-black leading-tight tracking-tight">
+                    {spammer.name}
                   </h3>
-                  {spammer.verified && (
-                    <span className="text-emerald-600 text-xs font-bold" title="Verified Operative">
-                      ✓
-                    </span>
-                  )}
-                </div>
-
-                {/* Team Affiliation & Active Period */}
-                <div className="flex items-center gap-1.5 text-xs text-zinc-500 mt-1 font-medium">
-                  <span className="text-zinc-900 font-semibold">{spammer.team}</span>
-                  <span aria-hidden="true">·</span>
-                  <span>{spammer.activePeriod}</span>
-                </div>
-
-                {/* Bio snippet */}
-                <p className="mt-3 text-xs text-zinc-600 line-clamp-3 leading-relaxed font-['Hind_Siliguri',sans-serif]">
-                  {lang === 'bn' ? spammer.bioBangla : spammer.bioEnglish}
-                </p>
-
-                {/* Specialties tags */}
-                <div className="mt-4 flex flex-wrap gap-1">
-                  {spammer.specialty.map((s) => (
-                    <span
-                      key={s}
-                      className="text-[11px] font-medium bg-zinc-100 text-zinc-700 px-2 py-0.5 rounded"
-                    >
-                      {s}
-                    </span>
-                  ))}
+                  <p className="text-xs sm:text-sm font-medium text-black leading-snug">
+                    {spammer.team}
+                  </p>
+                  <p className="text-xs sm:text-sm font-normal text-black leading-snug">
+                    {spammer.activePeriod || 'Since 2014 Till now'}
+                  </p>
+                  <p className="text-xs sm:text-sm font-normal text-black leading-snug">
+                    Whatsapp : {whatsappNumber}
+                  </p>
                 </div>
               </div>
 
-              {/* Bottom Card Actions */}
-              <div className="mt-5 pt-3 border-t border-zinc-100 flex items-center justify-between">
-                <span className="text-xs font-bold text-red-600 group-hover:underline">
-                  {lang === 'bn' ? 'প্রোফাইল দেখুন →' : 'View Profile →'}
-                </span>
-
-                <button
-                  type="button"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    onRespectSpammer(spammer.id);
-                  }}
-                  className="flex items-center gap-1 px-2.5 py-1 bg-zinc-50 hover:bg-red-50 text-zinc-700 hover:text-red-700 border border-zinc-200 rounded-lg text-xs font-bold transition-all active:scale-95"
+              {/* Right: "View wiki ▶" Button */}
+              <button
+                type="button"
+                onClick={() => onSelectSpammer(spammer)}
+                className="group flex items-center gap-1 text-zinc-400 hover:text-black font-bold text-xs sm:text-sm whitespace-nowrap pl-2 pr-1 py-2 transition-colors cursor-pointer shrink-0"
+              >
+                <span>View wiki</span>
+                <svg
+                  className="w-3.5 h-3.5 fill-zinc-400 group-hover:fill-black transition-colors"
+                  viewBox="0 0 24 24"
                 >
-                  <span>🫡 সালাম</span>
-                  <span className="font-mono tabular-nums text-red-600 font-bold">
-                    {spammer.respectCount.toLocaleString()}
-                  </span>
-                </button>
-              </div>
+                  <path d="M8 5v14l11-7z" />
+                </svg>
+              </button>
             </div>
           );
         })}
+
+        {filteredSpammers.length === 0 && (
+          <div className="bg-white rounded-2xl p-8 text-center border border-zinc-200 text-zinc-500 text-sm">
+            কোনো স্প্যামার পাওয়া যায়নি। অন্য নাম দিয়ে অনুসন্ধান করুন।
+          </div>
+        )}
       </div>
     </div>
   );

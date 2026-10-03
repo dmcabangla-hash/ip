@@ -2,6 +2,45 @@ import { SpammerProfile, TeamProfile } from '../types';
 
 export const INITIAL_TEAMS: TeamProfile[] = [
   {
+    id: 'team-nct',
+    name: 'National Cyber Team',
+    alias: 'NCT',
+    founded: '2014',
+    origin: 'Bangladesh',
+    status: 'Legendary',
+    memberCount: 380,
+    totalOps: 512,
+    respectCount: 12450,
+    manifestoBangla: 'সাইবার জগতে সত্য ও সার্বভৌমত্ব প্রতিষ্ঠায় আমরা সদা সজাগ। উই নেভার বো ডাউন।',
+    manifestoEnglish: 'Always vigilant in defending digital sovereignty and justice in cyberspace. We never bow down.',
+    leader: 'Raj Alamin',
+    keyMembers: ['Raj Alamin', 'Cyber Ghost', 'Shadow Strike'],
+    notableOps: [
+      { year: '2014', opName: 'National Guard Protocol', impact: 'Takedown of 500+ hostile spam and phishing links' },
+      { year: '2019', opName: 'Mass Ban Wave', impact: 'Neutralized organized malicious network syndicates' },
+      { year: '2024', opName: 'Cyber Sentinel 24', impact: 'Recovered national social community infrastructure' }
+    ]
+  },
+  {
+    id: 'team-rdx',
+    name: 'RDX Zone',
+    alias: 'RDX',
+    founded: '2018',
+    origin: 'Bangladesh',
+    status: 'Active',
+    memberCount: 140,
+    totalOps: 220,
+    respectCount: 7890,
+    manifestoBangla: 'ধ্বংস নয়, প্রতিরোধই আমাদের শক্তি। সাইবার স্পেসের যেকোনো প্রতিকূলতার বিরুদ্ধে নির্ভীক জবাব।',
+    manifestoEnglish: 'Defense is our weapon. Fearless retaliation against hostile digital actors.',
+    leader: 'Raj Alamin',
+    keyMembers: ['Raj Alamin', 'RDX Striker', 'Vortex'],
+    notableOps: [
+      { year: '2019', opName: 'Operation Blast', impact: 'Decommissioned high-threat fake networks' },
+      { year: '2023', opName: 'RDX Defense Line', impact: 'Mass reporting campaigns protecting verified creators' }
+    ]
+  },
+  {
     id: 'team-bca',
     name: 'Bangladesh Cyber Army',
     alias: 'BCA',
@@ -120,6 +159,98 @@ export const INITIAL_TEAMS: TeamProfile[] = [
 ];
 
 export const INITIAL_SPAMMERS: SpammerProfile[] = [
+  {
+    id: 'spammer-raj-nct',
+    name: 'Raj Alamin',
+    alias: 'Raj Alamin',
+    avatarUrl: '/raj_alamin.png',
+    team: 'National Cyber Team',
+    teamId: 'team-nct',
+    origin: 'Dhaka, Bangladesh',
+    activePeriod: 'Since 2014 till now',
+    specialty: ['Mass Report', 'Social Engineering', 'Page Takeover'],
+    status: 'Legend',
+    respectCount: 8940,
+    verified: true,
+    bioBangla: 'ন্যাশনাল সাইবার টিমের অন্যতম প্রধান স্তম্ভ ও শীর্ষস্থানীয় সাইবার স্প্যামার। ২০১৪ সাল থেকে সাইবার স্পেসে দেশের সার্বভৌমত্ব রক্ষা ও অপশক্তির বিরুদ্ধে ঐক্যবদ্ধ প্রতিরোধ গড়ে তুলতে নেতৃত্ব দিচ্ছেন। হাজার হাজার ভুয়া আইডি ও ক্ষতিকারক পেজ অপসারণে তার অবদান অনস্বীকার্য। সাইবার স্প্যামিং ও ট্যাকটিক্যাল অপারেশনের ময়দানে তিনি এক ইতিহাস খ্যাত কিংবদন্তি।',
+    bioEnglish: 'Core veteran operative and frontline leader of National Cyber Team. Active since 2014, commanding tactical mass reporting campaigns, cyber defense initiatives, and community protection protocols.',
+    famousOperations: [
+      { year: '2014', title: 'Founding Offensive', description: 'Established National Cyber Team and coordinated mass anti-scam defense.' },
+      { year: '2018', title: 'Mass Impersonation Purge', description: 'Decommissioned 600+ fraud networks targeting creators and public figures.' },
+      { year: '2023', title: 'Op Cyber Shield', description: 'Protected verified national assets and conducted decisive counter-strikes.' }
+    ],
+    socials: {
+      telegram: '@raj_alamin_nct',
+      facebook: 'fb.com/raj.alamin.nct'
+    },
+    whatsapp: '+601114303075'
+  },
+  {
+    id: 'spammer-anik-nct',
+    name: 'Anik Rahman',
+    alias: 'Anik Rahman',
+    avatarUrl: '/raj_alamin.png',
+    team: 'National Cyber Team',
+    teamId: 'team-nct',
+    origin: 'Dhaka, Bangladesh',
+    activePeriod: 'Since 2014 Till now',
+    specialty: ['Mass Report', 'Social Engineering'],
+    status: 'Legend',
+    respectCount: 7850,
+    verified: true,
+    bioBangla: 'ন্যাশনাল সাইবার টিমের অন্যতম সিনিয়র মেম্বার ও সাইবার প্রতিরোধ বিশেষজ্ঞ। ২০১৪ সাল থেকে সাইবার স্পেসে দেশের সার্বভৌমত্ব রক্ষা ও অপশক্তির বিরুদ্ধে সাইবার আক্রমণ প্রতিহত করে আসছেন।',
+    bioEnglish: 'Senior operative in National Cyber Team, dedicated to cyber defense and mass reporting offensive protocols.',
+    famousOperations: [
+      { year: '2014', title: 'National Guard Protocol', description: 'Takedown of 500+ hostile spam and phishing links' },
+      { year: '2019', title: 'Fake Page Purge', description: 'Removed 180+ impersonation political & celebrity pages' }
+    ],
+    whatsapp: '+601114303075'
+  },
+  {
+    id: 'spammer-ibrahim-nct',
+    name: 'Ibrahim Molla',
+    alias: 'Ibrahim Molla',
+    avatarUrl: '/raj_alamin.png',
+    team: 'National Cyber Team',
+    teamId: 'team-nct',
+    origin: 'Chittagong, Bangladesh',
+    activePeriod: 'Since 2014 Till now',
+    specialty: ['Traffic Flooding / DDoS', 'Botnet & Automation'],
+    status: 'Legend',
+    respectCount: 6920,
+    verified: true,
+    bioBangla: 'ন্যাশনাল সাইবার টিমের বিশিষ্ট ফ্রন্টলাইন যোদ্ধা। ২০১৪ সাল থেকে সাইবার স্পেসে সত্য ও সার্বভৌমত্ব রক্ষায় ভূমিকা পালন করছেন।',
+    bioEnglish: 'Frontline fighter in National Cyber Team commanding tactical mass report campaigns and cyber safety infrastructure.',
+    famousOperations: [
+      { year: '2014', title: 'Anti-Phish Defense', description: 'Neutralized organized malicious network syndicates' },
+      { year: '2021', title: 'Op Cyber Shield', description: 'Protected verified national assets and conducted decisive counter-strikes' }
+    ],
+    whatsapp: '+601114303075'
+  },
+  {
+    id: 'spammer-raj-rdx',
+    name: 'Raj Alamin',
+    alias: 'Raj Alamin',
+    avatarUrl: '/raj_alamin.png',
+    team: 'RDX Zone',
+    teamId: 'team-rdx',
+    origin: 'Sylhet, Bangladesh',
+    activePeriod: 'Since 2018 till now',
+    specialty: ['Traffic Flooding / DDoS', 'Botnet & Automation', 'Account Recovery & Defense'],
+    status: 'Active',
+    respectCount: 5210,
+    verified: true,
+    bioBangla: 'আরডিএক্স জোনের অন্যতম দক্ষ সাইবার যোদ্ধা ও স্প্যামার। ২০১৮ সাল থেকে আরডিএক্স জোনের প্ল্যাটফর্মে সক্রিয় থেকে বহু গুরুত্বপূর্ণ ডিজিটাল অপারেশনে নেতৃত্ব দিয়েছেন। অটোমেটেড রিপোর্ট সিস্টেম এবং ট্রাফিক প্রতিরোধে তার বিশেষ দক্ষতা রয়েছে।',
+    bioEnglish: 'Senior operative in RDX Zone, specialized in automated mass reports, tactical traffic flooding, and account protection operations since 2018.',
+    famousOperations: [
+      { year: '2019', title: 'RDX Blast Strike', description: 'Neutralized 200+ hostile groups attempting coordinate attacks.' },
+      { year: '2022', title: 'Creator Defense', description: 'Restored compromised accounts for high-profile digital creators.' }
+    ],
+    socials: {
+      telegram: '@raj_alamin_rdx',
+      facebook: 'fb.com/raj.alamin.rdx'
+    }
+  },
   {
     id: 'spammer-1',
     name: 'Tanvir Hossain',

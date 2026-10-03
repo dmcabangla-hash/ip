@@ -11,7 +11,9 @@ import {
 import { INITIAL_SPAMMERS, INITIAL_TEAMS, TARGET_PILLARS } from './data/initialData';
 import { Header } from './components/Header';
 import { DrawerMenu } from './components/DrawerMenu';
-import { HeroPuppetSection } from './components/HeroPuppetSection';
+import { HeroPuppetSection, SearchSuggestionItem } from './components/HeroPuppetSection';
+import { SpammerWikiView } from './components/SpammerWikiView';
+import { TeamWikiView } from './components/TeamWikiView';
 import { SignInView } from './components/SignInView';
 import { RegistrationView } from './components/RegistrationView';
 import { UserDashboardView } from './components/UserDashboardView';
@@ -33,7 +35,7 @@ export default function App() {
   const [activeCategoryPillar, setActiveCategoryPillar] = useState<string | null>(null);
 
   // Modals for detail inspection
-  const [selectedSpammer, setSelectedSpammer] = useState<SpammerProfile | null>(null);
+  const [selectedSpammerModal, setSelectedSpammerModal] = useState<SpammerProfile | null>(null);
   const [selectedTeam, setSelectedTeam] = useState<TeamProfile | null>(null);
 
   // -------------------------------------------------------------
@@ -41,7 +43,7 @@ export default function App() {
   // -------------------------------------------------------------
   const [users, setUsers] = useState<UserAccount[]>(() => {
     try {
-      const saved = localStorage.getItem('darkhub_users_v3');
+      const saved = localStorage.getItem('darkhub_users_v5');
       if (saved) return JSON.parse(saved);
     } catch {
       // ignore
@@ -56,28 +58,29 @@ export default function App() {
         registeredAt: '2026-01-01',
       },
       {
-        id: 'user-raj',
+        id: 'user-raj-nct',
         name: 'Raj Alamin',
         email: 'rajalamin@darkhub.com',
         role: 'user',
         status: 'active',
-        avatarUrl: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=150&q=80',
-        registeredAt: '2026-03-15',
+        avatarUrl: '/raj_alamin.png',
+        registeredAt: '2014-06-15',
       },
       {
-        id: 'user-tanvir',
-        name: 'Tanvir Hossain',
-        email: 'tanvir@shadowhunter.bd',
+        id: 'user-raj-rdx',
+        name: 'Raj Alamin',
+        email: 'raj.rdx@darkhub.com',
         role: 'user',
         status: 'active',
-        registeredAt: '2026-05-20',
+        avatarUrl: '/raj_alamin.png',
+        registeredAt: '2018-03-20',
       },
     ];
   });
 
   const [currentUser, setCurrentUser] = useState<UserAccount | null>(() => {
     try {
-      const saved = localStorage.getItem('darkhub_current_user_v3');
+      const saved = localStorage.getItem('darkhub_current_user_v5');
       return saved ? JSON.parse(saved) : null;
     } catch {
       return null;
@@ -85,14 +88,14 @@ export default function App() {
   });
 
   useEffect(() => {
-    localStorage.setItem('darkhub_users_v3', JSON.stringify(users));
+    localStorage.setItem('darkhub_users_v5', JSON.stringify(users));
   }, [users]);
 
   useEffect(() => {
     if (currentUser) {
-      localStorage.setItem('darkhub_current_user_v3', JSON.stringify(currentUser));
+      localStorage.setItem('darkhub_current_user_v5', JSON.stringify(currentUser));
     } else {
-      localStorage.removeItem('darkhub_current_user_v3');
+      localStorage.removeItem('darkhub_current_user_v5');
     }
   }, [currentUser]);
 
@@ -101,7 +104,7 @@ export default function App() {
   // -------------------------------------------------------------
   const [bioSubmissions, setBioSubmissions] = useState<UserBioSubmission[]>(() => {
     try {
-      const saved = localStorage.getItem('darkhub_user_bios_v3');
+      const saved = localStorage.getItem('darkhub_user_bios_v5');
       if (saved) return JSON.parse(saved);
     } catch {
       // ignore
@@ -109,13 +112,18 @@ export default function App() {
     return [
       {
         id: 'bio-1',
-        userId: 'user-raj',
+        userId: 'user-raj-nct',
         userName: 'Raj Alamin',
         name: 'Raj Alamin',
-        startedOn: '2018',
-        selectTeam: 'Dark Shadow Hackers',
-        aboutYou: 'Mass reporting commander & tactical social defense operator.',
-        status: 'pending',
+        startedOn: '2014',
+        selectTeam: 'National Cyber Team',
+        aboutYou: 'National Cyber Team (NCT) এর অন্যতম প্রতিষ্ঠাতা সদস্য ও ফ্রন্টলাইন কমান্ডার। ২০১৪ সাল থেকে সাইবার স্পেসে দেশের সার্বভৌমত্ব রক্ষা ও অপশক্তির বিরুদ্ধে সাইবার আক্রমণ প্রতিহত করে আসছেন।',
+        famousOperations: [
+          { year: '2014', title: 'Founding Offensive', description: 'Established National Cyber Team and coordinated mass anti-scam defense.' },
+          { year: '2018', title: 'Mass Impersonation Purge', description: 'Decommissioned 600+ fraud networks targeting creators and public figures.' },
+          { year: '2023', title: 'Op Cyber Shield', description: 'Protected verified national assets and conducted decisive counter-strikes.' }
+        ],
+        status: 'approved',
         submittedAt: '2026-10-01',
       },
     ];
@@ -123,17 +131,36 @@ export default function App() {
 
   const [teamSubmissions, setTeamSubmissions] = useState<TeamBioSubmission[]>(() => {
     try {
-      const saved = localStorage.getItem('darkhub_team_bios_v3');
+      const saved = localStorage.getItem('darkhub_team_bios_v5');
       if (saved) return JSON.parse(saved);
     } catch {
       // ignore
     }
-    return [];
+    return [
+      {
+        id: 'team-sub-nct',
+        userId: 'user-raj-nct',
+        userName: 'Raj Alamin',
+        teamName: 'National Cyber Team',
+        startedOn: '2024',
+        founder: 'Raj Alamin',
+        about: 'National Cyber Team (NCT) সাইবার স্পেসে দেশের সার্বভৌমত্ব রক্ষা ও অপশক্তির বিরুদ্ধে ঐক্যবদ্ধ প্রতিরোধ। আমরা থামিনি, থামব না। উই নেভার বো ডাউন।',
+        applyForTopTeam: true,
+        memberCount: 380,
+        activists: ['Raj Alamin', 'Cyber Ghost', 'Shadow Strike', 'Byte Striker'],
+        notableOps: [
+          { year: '2024', opName: 'National Guard Protocol', impact: 'Takedown of 500+ hostile spam and phishing links' },
+          { year: '2025', opName: 'Cyber Sentinel 25', impact: 'Protected national cyberspace community infrastructure' }
+        ],
+        status: 'approved',
+        submittedAt: '2026-10-01',
+      },
+    ];
   });
 
   const [works, setWorks] = useState<WorkSubmission[]>(() => {
     try {
-      const saved = localStorage.getItem('darkhub_works_v3');
+      const saved = localStorage.getItem('darkhub_works_v5');
       if (saved) return JSON.parse(saved);
     } catch {
       // ignore
@@ -141,13 +168,13 @@ export default function App() {
     return [
       {
         id: 'work-1',
-        userId: 'user-raj',
+        userId: 'user-raj-nct',
         userName: 'Raj Alamin',
         title: 'Anik এর আইডি সাসপেন্ড করেছি',
         selectPlatform: 'Facebook',
         typeOfWork: 'ID Suspension',
         successDate: '2026-09-28',
-        selectTeam: 'Dark Shadow Hackers',
+        selectTeam: 'National Cyber Team',
         victimUrl: 'https://facebook.com/anik.hostile',
         postViews: 146,
         postLink: 'https://darkhub.io/work/w84920',
@@ -158,15 +185,15 @@ export default function App() {
   });
 
   useEffect(() => {
-    localStorage.setItem('darkhub_user_bios_v3', JSON.stringify(bioSubmissions));
+    localStorage.setItem('darkhub_user_bios_v5', JSON.stringify(bioSubmissions));
   }, [bioSubmissions]);
 
   useEffect(() => {
-    localStorage.setItem('darkhub_team_bios_v3', JSON.stringify(teamSubmissions));
+    localStorage.setItem('darkhub_team_bios_v5', JSON.stringify(teamSubmissions));
   }, [teamSubmissions]);
 
   useEffect(() => {
-    localStorage.setItem('darkhub_works_v3', JSON.stringify(works));
+    localStorage.setItem('darkhub_works_v5', JSON.stringify(works));
   }, [works]);
 
   // -------------------------------------------------------------
@@ -174,7 +201,7 @@ export default function App() {
   // -------------------------------------------------------------
   const [teams, setTeams] = useState<TeamProfile[]>(() => {
     try {
-      const saved = localStorage.getItem('darkhub_teams_v3');
+      const saved = localStorage.getItem('darkhub_teams_v5');
       return saved ? JSON.parse(saved) : INITIAL_TEAMS;
     } catch {
       return INITIAL_TEAMS;
@@ -183,7 +210,7 @@ export default function App() {
 
   const [spammers, setSpammers] = useState<SpammerProfile[]>(() => {
     try {
-      const saved = localStorage.getItem('darkhub_spammers_v3');
+      const saved = localStorage.getItem('darkhub_spammers_v5');
       return saved ? JSON.parse(saved) : INITIAL_SPAMMERS;
     } catch {
       return INITIAL_SPAMMERS;
@@ -191,12 +218,22 @@ export default function App() {
   });
 
   useEffect(() => {
-    localStorage.setItem('darkhub_teams_v3', JSON.stringify(teams));
+    localStorage.setItem('darkhub_teams_v5', JSON.stringify(teams));
   }, [teams]);
 
   useEffect(() => {
-    localStorage.setItem('darkhub_spammers_v3', JSON.stringify(spammers));
+    localStorage.setItem('darkhub_spammers_v5', JSON.stringify(spammers));
   }, [spammers]);
+
+  // -------------------------------------------------------------
+  // REAL-TIME WIKI PROFILE SELECTION (Single Source of Truth)
+  // -------------------------------------------------------------
+  const [selectedWikiSpammerId, setSelectedWikiSpammerId] = useState<string | null>(null);
+  const [selectedWikiTeamId, setSelectedWikiTeamId] = useState<string | null>(null);
+
+  // Directly derive active profiles from state so all additions/deletions update in real-time
+  const selectedWikiSpammer = spammers.find((s) => s.id === selectedWikiSpammerId) || null;
+  const selectedWikiTeam = teams.find((t) => t.id === selectedWikiTeamId) || null;
 
   // -------------------------------------------------------------
   // AUTHENTICATION LOGIC
@@ -229,7 +266,7 @@ export default function App() {
       return true;
     }
 
-    // Allow demo login for entered email
+    // Allow login for entered email
     const newUser: UserAccount = {
       id: `user-${Date.now()}`,
       name: email.split('@')[0],
@@ -271,7 +308,7 @@ export default function App() {
   };
 
   // -------------------------------------------------------------
-  // USER DASHBOARD SUBMISSIONS
+  // USER DASHBOARD SUBMISSIONS (Interconnected with Spammer Wiki / About Page)
   // -------------------------------------------------------------
   const handleSubmitUserBio = (bioData: Omit<UserBioSubmission, 'id' | 'userId' | 'userName' | 'submittedAt' | 'status'>) => {
     const newSubmission: UserBioSubmission = {
@@ -279,22 +316,102 @@ export default function App() {
       userId: currentUser?.id || 'guest',
       userName: currentUser?.name || bioData.name,
       ...bioData,
-      status: 'pending',
+      status: 'approved',
       submittedAt: new Date().toISOString().slice(0, 10),
     };
     setBioSubmissions((prev) => [newSubmission, ...prev]);
+
+    // Update live SpammerProfile so their Spammer Wiki immediately updates in real-time
+    setSpammers((prev) => {
+      const existingIdx = prev.findIndex(
+        (s) =>
+          (currentUser && s.id === currentUser.id) ||
+          s.name.toLowerCase() === bioData.name.toLowerCase()
+      );
+
+      const updatedSpammer: SpammerProfile = {
+        id: existingIdx >= 0 ? prev[existingIdx].id : `spammer-${Date.now()}`,
+        name: bioData.name,
+        alias: bioData.name,
+        team: bioData.selectTeam || 'National Cyber Team',
+        origin: 'Bangladesh',
+        activePeriod: bioData.startedOn ? `Since ${bioData.startedOn} till now` : 'Since 2014 till now',
+        specialty: existingIdx >= 0 ? prev[existingIdx].specialty : ['Mass Report', 'Social Engineering'],
+        status: 'Legend',
+        respectCount: existingIdx >= 0 ? prev[existingIdx].respectCount : 120,
+        verified: true,
+        bioBangla: bioData.aboutYou,
+        bioEnglish: '', // Prevent duplicate bio text
+        famousOperations: bioData.famousOperations !== undefined
+          ? bioData.famousOperations
+          : (existingIdx >= 0 ? prev[existingIdx].famousOperations : []),
+        avatarUrl: bioData.profileImage || (existingIdx >= 0 ? prev[existingIdx].avatarUrl : '/raj_alamin.png'),
+        whatsapp: bioData.whatsapp || (existingIdx >= 0 ? prev[existingIdx].whatsapp : '+601114303075'),
+      };
+
+      if (existingIdx >= 0) {
+        const copy = [...prev];
+        copy[existingIdx] = updatedSpammer;
+        return copy;
+      } else {
+        return [updatedSpammer, ...prev];
+      }
+    });
   };
 
+  // -------------------------------------------------------------
+  // TEAM DASHBOARD SUBMISSIONS (Interconnected with Team Wiki / About Page)
+  // -------------------------------------------------------------
   const handleSubmitTeamBio = (teamData: Omit<TeamBioSubmission, 'id' | 'userId' | 'userName' | 'submittedAt' | 'status'>) => {
     const newSubmission: TeamBioSubmission = {
       id: `team-sub-${Date.now()}`,
       userId: currentUser?.id || 'guest',
       userName: currentUser?.name || teamData.founder,
       ...teamData,
-      status: 'pending',
+      status: 'approved',
       submittedAt: new Date().toISOString().slice(0, 10),
     };
     setTeamSubmissions((prev) => [newSubmission, ...prev]);
+
+    // Update or sync live TeamProfile so Team Wiki immediately updates in real-time
+    setTeams((prev) => {
+      const existingIdx = prev.findIndex(
+        (t) =>
+          t.name.toLowerCase() === teamData.teamName.toLowerCase() ||
+          t.alias.toLowerCase() === teamData.teamName.toLowerCase()
+      );
+
+      const updatedTeam: TeamProfile = {
+        id: existingIdx >= 0 ? prev[existingIdx].id : `team-${Date.now()}`,
+        name: teamData.teamName,
+        alias: teamData.teamName.slice(0, 3).toUpperCase(),
+        founded: teamData.startedOn || '2024',
+        origin: 'Bangladesh',
+        status: teamData.applyForTopTeam ? 'Legendary' : 'Active',
+        memberCount: teamData.memberCount !== undefined
+          ? teamData.memberCount
+          : (existingIdx >= 0 ? prev[existingIdx].memberCount : 380),
+        totalOps: existingIdx >= 0 ? prev[existingIdx].totalOps : 512,
+        respectCount: existingIdx >= 0 ? prev[existingIdx].respectCount : 12450,
+        manifestoBangla: teamData.about,
+        manifestoEnglish: '', // Prevent duplicate manifesto text
+        leader: teamData.founder,
+        keyMembers: teamData.activists && teamData.activists.length > 0
+          ? teamData.activists
+          : (existingIdx >= 0 ? prev[existingIdx].keyMembers : [teamData.founder]),
+        notableOps: teamData.notableOps !== undefined
+          ? teamData.notableOps
+          : (existingIdx >= 0 ? prev[existingIdx].notableOps : []),
+      };
+
+      if (existingIdx >= 0) {
+        const copy = [...prev];
+        copy[existingIdx] = updatedTeam;
+        return copy;
+      } else {
+        return [updatedTeam, ...prev];
+      }
+    });
   };
 
   const handleSubmitWork = (workData: Omit<WorkSubmission, 'id' | 'userId' | 'userName' | 'submittedAt' | 'status' | 'postViews' | 'postLink'>) => {
@@ -336,7 +453,6 @@ export default function App() {
       prev.map((b) => (b.id === submissionId ? { ...b, status: 'approved' } : b))
     );
 
-    // Push into Spammers directory
     const newSpammerProfile: SpammerProfile = {
       id: `spammer-${Date.now()}`,
       name: sub.name,
@@ -349,8 +465,8 @@ export default function App() {
       respectCount: 10,
       verified: true,
       bioBangla: sub.aboutYou,
-      bioEnglish: sub.aboutYou,
-      famousOperations: [],
+      bioEnglish: '',
+      famousOperations: sub.famousOperations || [],
       avatarUrl: sub.profileImage,
     };
     setSpammers((prev) => [newSpammerProfile, ...prev]);
@@ -370,7 +486,6 @@ export default function App() {
       prev.map((t) => (t.id === submissionId ? { ...t, status: 'approved' } : t))
     );
 
-    // Push into Top Teams directory
     const newTeam: TeamProfile = {
       id: `team-${Date.now()}`,
       name: sub.teamName,
@@ -378,14 +493,14 @@ export default function App() {
       founded: sub.startedOn || '2024',
       origin: 'Bangladesh',
       status: sub.applyForTopTeam ? 'Legendary' : 'Active',
-      memberCount: 20,
+      memberCount: sub.memberCount || 20,
       totalOps: 5,
       respectCount: 15,
       manifestoBangla: sub.about,
-      manifestoEnglish: sub.about,
+      manifestoEnglish: '',
       leader: sub.founder,
-      keyMembers: [sub.founder],
-      notableOps: [],
+      keyMembers: sub.activists || [sub.founder],
+      notableOps: sub.notableOps || [],
     };
     setTeams((prev) => [newTeam, ...prev]);
   };
@@ -413,22 +528,18 @@ export default function App() {
     setSpammers((prev) =>
       prev.map((s) => (s.id === id ? { ...s, respectCount: s.respectCount + 1 } : s))
     );
-    if (selectedSpammer && selectedSpammer.id === id) {
-      setSelectedSpammer((prev) => (prev ? { ...prev, respectCount: prev.respectCount + 1 } : null));
-    }
   };
 
   const handleRespectTeam = (id: string) => {
     setTeams((prev) =>
       prev.map((t) => (t.id === id ? { ...t, respectCount: t.respectCount + 1 } : t))
     );
-    if (selectedTeam && selectedTeam.id === id) {
-      setSelectedTeam((prev) => (prev ? { ...prev, respectCount: prev.respectCount + 1 } : null));
-    }
   };
 
   // Navigation Handler
   const handleNavigate = (page: ActivePage) => {
+    setSelectedWikiSpammerId(null);
+    setSelectedWikiTeamId(null);
     if (page === 'submit-biodata') {
       if (currentUser) {
         setCurrentPage('user-dashboard');
@@ -442,19 +553,23 @@ export default function App() {
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
-  // Search Results
+  // -------------------------------------------------------------
+  // REAL-TIME AUTO-SUGGESTIONS & SEARCH
+  // -------------------------------------------------------------
   const isSearching = searchQuery.trim().length > 0;
   const q = searchQuery.toLowerCase().trim();
 
+  // Search filtered spammers
   const searchSpammers = isSearching
     ? spammers.filter(
         (s) =>
-          s.alias.toLowerCase().includes(q) ||
           s.name.toLowerCase().includes(q) ||
+          s.alias.toLowerCase().includes(q) ||
           s.team.toLowerCase().includes(q)
       )
     : [];
 
+  // Search filtered teams
   const searchTeams = isSearching
     ? teams.filter(
         (t) =>
@@ -464,248 +579,252 @@ export default function App() {
       )
     : [];
 
-  const totalMatches = searchSpammers.length + searchTeams.length;
+  // Formatted Suggestions
+  const suggestions: SearchSuggestionItem[] = isSearching
+    ? [
+        ...searchSpammers.map((s) => ({
+          id: s.id,
+          type: 'spammer' as const,
+          name: s.name,
+          team: s.team,
+          formattedLabel: `${s.name} - ${s.team}`,
+          spammer: s,
+        })),
+        ...searchTeams.map((t) => ({
+          id: t.id,
+          type: 'team' as const,
+          name: t.name,
+          team: t.alias,
+          formattedLabel: `${t.name} [Team]`,
+          teamProfile: t,
+        })),
+      ]
+    : [];
+
+  const handleSelectSuggestion = (item: SearchSuggestionItem) => {
+    if (item.type === 'spammer' && item.spammer) {
+      setSelectedWikiSpammerId(item.spammer.id);
+      setSelectedWikiTeamId(null);
+      setSearchQuery('');
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    } else if (item.type === 'team' && item.teamProfile) {
+      setSelectedWikiTeamId(item.teamProfile.id);
+      setSelectedWikiSpammerId(null);
+      setSearchQuery('');
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+  };
 
   return (
     <div className="min-h-screen bg-zinc-100 flex justify-center">
-      {/* Centered Mobile/Desktop Container matching the exact mockup frame */}
       <div className="w-full max-w-xl min-h-screen bg-white shadow-xl flex flex-col justify-between relative overflow-x-hidden">
-        {/* Top Header strictly matching Image 1 */}
-        {currentPage !== 'signin' && currentPage !== 'register' && currentPage !== 'user-dashboard' && currentPage !== 'admin-dashboard' && (
-          <Header
+        
+        {/* 1. TEAM WIKI PAGE (Exact match of uploaded screenshot Screenshot_20261003-141759.png) */}
+        {selectedWikiTeam ? (
+          <TeamWikiView
+            team={selectedWikiTeam}
+            onBack={() => setSelectedWikiTeamId(null)}
             onOpenMenu={() => setIsMenuOpen(true)}
-            onNavigateHome={() => {
-              setCurrentPage('home');
-              setSearchQuery('');
-            }}
+            onRespect={handleRespectTeam}
           />
-        )}
-
-        {/* Main Body */}
-        <main className="flex-1 w-full">
-          {/* HOME VIEW: Exactly matching Image 1 */}
-          {currentPage === 'home' && (
-            <div className="relative pb-8">
-              <HeroPuppetSection
-                searchQuery={searchQuery}
-                onSearchChange={setSearchQuery}
-                onSubmitSearch={() => {}}
-                onSelectCategory={(category) => {
-                  setActiveCategoryPillar(category);
+        ) : selectedWikiSpammer ? (
+          /* 2. SPAMMER WIKI PAGE (Exact match of uploaded design) */
+          <SpammerWikiView
+            spammer={selectedWikiSpammer}
+            onBack={() => setSelectedWikiSpammerId(null)}
+            onOpenMenu={() => setIsMenuOpen(true)}
+            onRespect={handleRespectSpammer}
+          />
+        ) : (
+          <>
+            {/* Top Header */}
+            {currentPage !== 'signin' && currentPage !== 'register' && currentPage !== 'user-dashboard' && currentPage !== 'admin-dashboard' && (
+              <Header
+                onOpenMenu={() => setIsMenuOpen(true)}
+                onNavigateHome={() => {
+                  setCurrentPage('home');
+                  setSelectedWikiSpammerId(null);
+                  setSelectedWikiTeamId(null);
+                  setSearchQuery('');
                 }}
+                showRedBar={currentPage !== 'home' && currentPage !== 'top-spammers'}
               />
+            )}
 
-              {/* Instant Search Results Overlay when typing */}
-              {isSearching && (
-                <div className="px-4 sm:px-6 pt-2 pb-6 animate-in fade-in slide-in-from-top-2 duration-200">
-                  <div className="bg-zinc-50 border-2 border-black rounded-xl p-4 sm:p-5 shadow-lg space-y-4">
-                    <div className="flex items-center justify-between border-b border-zinc-200 pb-2.5">
-                      <div className="flex items-center gap-2">
-                        <span className="w-2.5 h-2.5 rounded-full bg-red-600 animate-pulse" />
-                        <h4 className="text-sm font-black text-black">
-                          Search Results: "{searchQuery}"
-                        </h4>
-                      </div>
-                      <button
-                        onClick={() => setSearchQuery('')}
-                        className="text-xs font-bold text-zinc-500 hover:text-black"
-                      >
-                        ✕ Clear
-                      </button>
-                    </div>
+            {/* Main Body */}
+            <main className="flex-1 w-full">
+              {/* HOME VIEW */}
+              {currentPage === 'home' && (
+                <div className="relative pb-8">
+                  <HeroPuppetSection
+                    searchQuery={searchQuery}
+                    onSearchChange={setSearchQuery}
+                    onSubmitSearch={() => {
+                      if (suggestions.length > 0) {
+                        handleSelectSuggestion(suggestions[0]);
+                      }
+                    }}
+                    onSelectCategory={(category) => {
+                      setActiveCategoryPillar(category);
+                    }}
+                    suggestions={suggestions}
+                    onSelectSuggestion={handleSelectSuggestion}
+                  />
 
-                    {totalMatches === 0 ? (
-                      <div className="py-6 text-center space-y-2">
-                        <p className="text-xs sm:text-sm text-zinc-600 font-medium">
-                          কোনো রেকর্ড পাওয়া যায়নি।
-                        </p>
+                  {activeCategoryPillar && (
+                    <div className="px-4 sm:px-6 pt-2 pb-4">
+                      <div className="bg-zinc-900 text-white rounded-xl p-4 shadow-lg flex items-start justify-between gap-3">
+                        <div>
+                          <div className="flex items-center gap-2">
+                            <span className="w-2 h-2 rounded-full bg-red-500" />
+                            <h4 className="text-xs font-bold text-red-400">
+                              {activeCategoryPillar}
+                            </h4>
+                          </div>
+                          <p className="text-xs text-zinc-300 mt-1 leading-relaxed">
+                            {TARGET_PILLARS.find((p) => p.label === activeCategoryPillar)?.bengaliDescription ||
+                              'এই সেক্টরের ডিজিটাল সুরক্ষা ও সাইবার অপারেশন ইতিহাস সংরক্ষিত রয়েছে।'}
+                          </p>
+                        </div>
                         <button
-                          onClick={() => {
-                            if (currentUser) {
-                              setCurrentPage('user-dashboard');
-                            } else {
-                              setCurrentPage('signin');
-                            }
-                          }}
-                          className="px-3 py-1.5 bg-red-600 text-white text-xs font-bold rounded-lg shadow-xs"
+                          onClick={() => setActiveCategoryPillar(null)}
+                          className="text-zinc-400 hover:text-white text-xs font-bold p-1"
                         >
-                          + এই নামে বায়োডাটা জমা দিন
+                          ✕
                         </button>
                       </div>
-                    ) : (
-                      <div className="space-y-2 max-h-72 overflow-y-auto">
-                        {searchSpammers.map((s) => (
-                          <div
-                            key={s.id}
-                            onClick={() => setSelectedSpammer(s)}
-                            className="p-2.5 bg-white border border-zinc-200 hover:border-black rounded-lg cursor-pointer transition-colors flex items-center justify-between"
-                          >
-                            <div>
-                              <span className="text-[10px] font-bold text-red-600 uppercase">
-                                Spammer
-                              </span>
-                              <div className="text-sm font-black text-zinc-950">
-                                {s.alias}
-                              </div>
-                              <div className="text-xs text-zinc-500">
-                                {s.team} · {s.origin}
-                              </div>
-                            </div>
-                            <span className="text-xs font-bold text-red-600">Dossier →</span>
-                          </div>
-                        ))}
-
-                        {searchTeams.map((t) => (
-                          <div
-                            key={t.id}
-                            onClick={() => setSelectedTeam(t)}
-                            className="p-2.5 bg-white border border-zinc-200 hover:border-black rounded-lg cursor-pointer transition-colors flex items-center justify-between"
-                          >
-                            <div>
-                              <span className="text-[10px] font-bold text-black uppercase">
-                                Team
-                              </span>
-                              <div className="text-sm font-black text-zinc-950">
-                                {t.name} [{t.alias}]
-                              </div>
-                              <div className="text-xs text-zinc-500">
-                                Leader: {t.leader} · Est. {t.founded}
-                              </div>
-                            </div>
-                            <span className="text-xs font-bold text-black">Archive →</span>
-                          </div>
-                        ))}
-                      </div>
-                    )}
-                  </div>
-                </div>
-              )}
-
-              {/* Pillar Category Popover */}
-              {activeCategoryPillar && (
-                <div className="px-4 sm:px-6 pt-2 pb-4">
-                  <div className="bg-zinc-900 text-white rounded-xl p-4 shadow-lg flex items-start justify-between gap-3">
-                    <div>
-                      <div className="flex items-center gap-2">
-                        <span className="w-2 h-2 rounded-full bg-red-500" />
-                        <h4 className="text-xs font-bold text-red-400">
-                          {activeCategoryPillar}
-                        </h4>
-                      </div>
-                      <p className="text-xs text-zinc-300 mt-1 leading-relaxed">
-                        {TARGET_PILLARS.find((p) => p.label === activeCategoryPillar)?.bengaliDescription ||
-                          'এই সেক্টরের ডিজিটাল সুরক্ষা ও সাইবার অপারেশন ইতিহাস সংরক্ষিত রয়েছে।'}
-                      </p>
                     </div>
-                    <button
-                      onClick={() => setActiveCategoryPillar(null)}
-                      className="text-zinc-400 hover:text-white text-xs font-bold p-1"
-                    >
-                      ✕
-                    </button>
-                  </div>
+                  )}
                 </div>
               )}
-            </div>
-          )}
 
-          {/* SIGN IN VIEW (Exact match of Image 3) */}
-          {currentPage === 'signin' && (
-            <SignInView
-              onSignIn={handleSignIn}
-              onNavigateRegister={() => setCurrentPage('register')}
-              onNavigateHome={() => setCurrentPage('home')}
-              onOpenMenu={() => setIsMenuOpen(true)}
-            />
-          )}
+              {/* SIGN IN VIEW */}
+              {currentPage === 'signin' && (
+                <SignInView
+                  onSignIn={handleSignIn}
+                  onNavigateRegister={() => setCurrentPage('register')}
+                  onNavigateHome={() => setCurrentPage('home')}
+                  onOpenMenu={() => setIsMenuOpen(true)}
+                />
+              )}
 
-          {/* REGISTRATION VIEW (Exact match of Image 4) */}
-          {currentPage === 'register' && (
-            <RegistrationView
-              onRegister={handleRegister}
-              onNavigateSignIn={() => setCurrentPage('signin')}
-              onNavigateHome={() => setCurrentPage('home')}
-              onOpenMenu={() => setIsMenuOpen(true)}
-            />
-          )}
+              {/* REGISTRATION VIEW */}
+              {currentPage === 'register' && (
+                <RegistrationView
+                  onRegister={handleRegister}
+                  onNavigateSignIn={() => setCurrentPage('signin')}
+                  onNavigateHome={() => setCurrentPage('home')}
+                  onOpenMenu={() => setIsMenuOpen(true)}
+                />
+              )}
 
-          {/* USER DASHBOARD VIEW (Exact match of Image 5, 6, 7) */}
-          {currentPage === 'user-dashboard' && currentUser && (
-            <UserDashboardView
-              currentUser={currentUser}
-              onSignOut={handleSignOut}
-              onNavigateHome={() => setCurrentPage('home')}
-              onSubmitUserBio={handleSubmitUserBio}
-              onSubmitTeamBio={handleSubmitTeamBio}
-              onSubmitWork={handleSubmitWork}
-              works={works}
-            />
-          )}
+              {/* USER DASHBOARD VIEW */}
+              {currentPage === 'user-dashboard' && currentUser && (
+                <UserDashboardView
+                  currentUser={currentUser}
+                  onSignOut={handleSignOut}
+                  onNavigateHome={() => setCurrentPage('home')}
+                  onSubmitUserBio={handleSubmitUserBio}
+                  onSubmitTeamBio={handleSubmitTeamBio}
+                  onSubmitWork={handleSubmitWork}
+                  works={works}
+                  currentSpammerProfile={
+                    spammers.find(
+                      (s) =>
+                        s.id === currentUser.id ||
+                        s.name.toLowerCase() === currentUser.name.toLowerCase()
+                    ) || spammers.find((s) => s.id === 'spammer-raj-nct') || null
+                  }
+                  currentTeamProfile={
+                    teams.find(
+                      (t) =>
+                        t.name.toLowerCase().includes('national cyber') ||
+                        t.leader.toLowerCase() === currentUser.name.toLowerCase()
+                    ) || teams[0] || null
+                  }
+                  onViewMyWiki={(spammer) => {
+                    setSelectedWikiSpammerId(spammer.id);
+                    setSelectedWikiTeamId(null);
+                  }}
+                  onViewTeamWiki={(team) => {
+                    setSelectedWikiTeamId(team.id);
+                    setSelectedWikiSpammerId(null);
+                  }}
+                />
+              )}
 
-          {/* ADMIN DASHBOARD VIEW */}
-          {currentPage === 'admin-dashboard' && (
-            <AdminDashboardView
-              users={users}
-              bioSubmissions={bioSubmissions}
-              teamSubmissions={teamSubmissions}
-              workSubmissions={works}
-              onToggleUserStatus={handleToggleUserStatus}
-              onApproveBio={handleApproveBio}
-              onRejectBio={handleRejectBio}
-              onApproveTeam={handleApproveTeam}
-              onRejectTeam={handleRejectTeam}
-              onApproveWork={handleApproveWork}
-              onRejectWork={handleRejectWork}
-              onNavigateHome={() => setCurrentPage('home')}
-            />
-          )}
+              {/* ADMIN DASHBOARD VIEW */}
+              {currentPage === 'admin-dashboard' && (
+                <AdminDashboardView
+                  users={users}
+                  bioSubmissions={bioSubmissions}
+                  teamSubmissions={teamSubmissions}
+                  workSubmissions={works}
+                  onToggleUserStatus={handleToggleUserStatus}
+                  onApproveBio={handleApproveBio}
+                  onRejectBio={handleRejectBio}
+                  onApproveTeam={handleApproveTeam}
+                  onRejectTeam={handleRejectTeam}
+                  onApproveWork={handleApproveWork}
+                  onRejectWork={handleRejectWork}
+                  onNavigateHome={() => setCurrentPage('home')}
+                />
+              )}
 
-          {/* TOP TEAMS VIEW */}
-          {currentPage === 'top-teams' && (
-            <TopTeamsView
-              teams={teams}
-              onSelectTeam={setSelectedTeam}
-              onRespectTeam={handleRespectTeam}
-              lang="bn"
-            />
-          )}
+              {/* TOP TEAMS VIEW */}
+              {currentPage === 'top-teams' && (
+                <TopTeamsView
+                  teams={teams}
+                  onSelectTeam={(team) => {
+                    setSelectedWikiTeamId(team.id);
+                    setSelectedWikiSpammerId(null);
+                  }}
+                  onRespectTeam={handleRespectTeam}
+                  lang="bn"
+                />
+              )}
 
-          {/* TOP SPAMMERS VIEW */}
-          {currentPage === 'top-spammers' && (
-            <TopSpammersView
-              spammers={spammers}
-              onSelectSpammer={setSelectedSpammer}
-              onRespectSpammer={handleRespectSpammer}
-              lang="bn"
-            />
-          )}
+              {/* TOP SPAMMERS VIEW */}
+              {currentPage === 'top-spammers' && (
+                <TopSpammersView
+                  spammers={spammers}
+                  onSelectSpammer={(s) => {
+                    setSelectedWikiSpammerId(s.id);
+                    setSelectedWikiTeamId(null);
+                  }}
+                  onRespectSpammer={handleRespectSpammer}
+                  lang="bn"
+                />
+              )}
 
-          {/* ABOUT DARKHUB VIEW */}
-          {currentPage === 'about' && (
-            <AboutView
-              lang="bn"
-              onNavigateSubmit={() => {
-                if (currentUser) {
-                  setCurrentPage('user-dashboard');
-                } else {
-                  setCurrentPage('signin');
-                }
-              }}
-            />
-          )}
+              {/* ABOUT DARKHUB VIEW */}
+              {currentPage === 'about' && (
+                <AboutView
+                  lang="bn"
+                  onNavigateSubmit={() => {
+                    if (currentUser) {
+                      setCurrentPage('user-dashboard');
+                    } else {
+                      setCurrentPage('signin');
+                    }
+                  }}
+                />
+              )}
 
-          {/* TERMS & CONDITIONS VIEW */}
-          {currentPage === 'terms' && (
-            <LegalView type="terms" lang="bn" />
-          )}
+              {/* TERMS & CONDITIONS VIEW */}
+              {currentPage === 'terms' && (
+                <LegalView type="terms" lang="bn" />
+              )}
 
-          {/* PRIVACY POLICY VIEW */}
-          {currentPage === 'privacy' && (
-            <LegalView type="privacy" lang="bn" />
-          )}
-        </main>
+              {/* PRIVACY POLICY VIEW */}
+              {currentPage === 'privacy' && (
+                <LegalView type="privacy" lang="bn" />
+              )}
+            </main>
+          </>
+        )}
 
-        {/* Slide-over Crimson Navigation Drawer (Image 2 & 4) */}
+        {/* Slide-over Crimson Navigation Drawer */}
         <DrawerMenu
           isOpen={isMenuOpen}
           onClose={() => setIsMenuOpen(false)}
@@ -714,15 +833,14 @@ export default function App() {
           currentUser={currentUser}
         />
 
-        {/* Spammer Profile Dossier Modal */}
+        {/* Detail Modals */}
         <SpammerProfileModal
-          spammer={selectedSpammer}
-          onClose={() => setSelectedSpammer(null)}
+          spammer={selectedSpammerModal}
+          onClose={() => setSelectedSpammerModal(null)}
           onRespect={handleRespectSpammer}
           lang="bn"
         />
 
-        {/* Team Detail Modal */}
         <TeamDetailModal
           team={selectedTeam}
           onClose={() => setSelectedTeam(null)}

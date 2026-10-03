@@ -1,14 +1,31 @@
-import React, { useState, useRef } from 'react';
-import { UserAccount, UserBioSubmission, TeamBioSubmission, WorkSubmission } from '../types';
+import React, { useState, useEffect } from 'react';
+import {
+  UserAccount,
+  UserBioSubmission,
+  TeamBioSubmission,
+  WorkSubmission,
+  SpammerProfile,
+  TeamProfile,
+} from '../types';
 
 interface UserDashboardViewProps {
   currentUser: UserAccount;
   onSignOut: () => void;
   onNavigateHome: () => void;
-  onSubmitUserBio: (bio: Omit<UserBioSubmission, 'id' | 'userId' | 'userName' | 'submittedAt' | 'status'>) => void;
-  onSubmitTeamBio: (bio: Omit<TeamBioSubmission, 'id' | 'userId' | 'userName' | 'submittedAt' | 'status'>) => void;
-  onSubmitWork: (work: Omit<WorkSubmission, 'id' | 'userId' | 'userName' | 'submittedAt' | 'status' | 'postViews' | 'postLink'>) => void;
-  works: WorkSubmission[];
+  onSubmitUserBio: (
+    bio: Omit<UserBioSubmission, 'id' | 'userId' | 'userName' | 'submittedAt' | 'status'>
+  ) => void;
+  onSubmitTeamBio: (
+    team: Omit<TeamBioSubmission, 'id' | 'userId' | 'userName' | 'submittedAt' | 'status'>
+  ) => void;
+  onSubmitWork?: (
+    work: Omit<WorkSubmission, 'id' | 'userId' | 'userName' | 'submittedAt' | 'status' | 'postViews' | 'postLink'>
+  ) => void;
+  works?: WorkSubmission[];
+  currentSpammerProfile?: SpammerProfile | null;
+  currentTeamProfile?: TeamProfile | null;
+  onViewMyWiki?: (spammer: SpammerProfile) => void;
+  onViewTeamWiki?: (team: TeamProfile) => void;
 }
 
 export const UserDashboardView: React.FC<UserDashboardViewProps> = ({
@@ -17,45 +34,206 @@ export const UserDashboardView: React.FC<UserDashboardViewProps> = ({
   onNavigateHome,
   onSubmitUserBio,
   onSubmitTeamBio,
-  onSubmitWork,
-  works,
+  currentSpammerProfile,
+  currentTeamProfile,
+  onViewMyWiki,
+  onViewTeamWiki,
 }) => {
-  const [activeTab, setActiveTab] = useState<'submit-bio' | 'team-bio' | 'submit-work'>('submit-bio');
-
-  // Submit Bio Form State (Image 5)
-  const [bioName, setBioName] = useState(currentUser.name || 'Raj Alamin');
-  const [bioStartedOn, setBioStartedOn] = useState('2018');
-  const [bioSelectTeam, setBioSelectTeam] = useState('Dark Shadow Hackers');
-  const [bioAboutYou, setBioAboutYou] = useState('Cyber defense and mass reporting specialist.');
-  const [bioProfileImage, setBioProfileImage] = useState<string>('');
-
-  // Team Bio Form State (Image 6)
-  const [teamName, setTeamName] = useState('');
-  const [teamStartedOn, setTeamStartedOn] = useState('2020');
-  const [teamFounder, setTeamFounder] = useState('');
-  const [teamAbout, setTeamAbout] = useState('');
-  const [teamProfileImage, setTeamProfileImage] = useState<string>('');
-  const [applyForTopTeam, setApplyForTopTeam] = useState(false);
-
-  // Submit Work Form State (Image 7)
-  const [workTitle, setWorkTitle] = useState('');
-  const [workPlatform, setWorkPlatform] = useState('Facebook');
-  const [workType, setWorkType] = useState('ID Suspension / Mass Report');
-  const [workSuccessDate, setWorkSuccessDate] = useState('2026-10-02');
-  const [workSelectTeam, setWorkSelectTeam] = useState('Dark Shadow Hackers');
-  const [workVictimUrl, setWorkVictimUrl] = useState('');
-  const [workScreenShot, setWorkScreenShot] = useState<string>('');
-
-  // Status feedback
+  const [activeTab, setActiveTab] = useState<'submit-bio' | 'team-bio'>('submit-bio');
   const [notification, setNotification] = useState<string | null>(null);
-  const [copiedId, setCopiedId] = useState<string | null>(null);
 
-  // File Upload Handlers
-  const bioFileRef = useRef<HTMLInputElement>(null);
-  const teamFileRef = useRef<HTMLInputElement>(null);
-  const workFileRef = useRef<HTMLInputElement>(null);
+  // -------------------------------------------------------------
+  // USER BIO / ABOUT PAGE FORM STATE
+  // -------------------------------------------------------------
+  const [bioName, setBioName] = useState(
+    currentSpammerProfile?.name || currentUser.name || 'Raj Alamin'
+  );
+  const [bioStartedOn, setBioStartedOn] = useState(
+    currentSpammerProfile?.activePeriod
+      ? currentSpammerProfile.activePeriod.replace(/[^0-9]/g, '').slice(0, 4) || '2014'
+      : '2014'
+  );
+  const [bioSelectTeam, setBioSelectTeam] = useState(
+    currentSpammerProfile?.team || 'National Cyber Team'
+  );
+  const [bioAboutYou, setBioAboutYou] = useState(
+    currentSpammerProfile?.bioBangla ||
+      currentSpammerProfile?.bioEnglish ||
+      'ন্যাশনাল সাইবার টিমের অন্যতম প্রধান স্তম্ভ ও শীর্ষস্থানীয় সাইবার স্প্যামার। ২০১৪ সাল থেকে সাইবার স্পেসে দেশের সার্বভৌমত্ব রক্ষা ও অপশক্তির বিরুদ্ধে ঐক্যবদ্ধ প্রতিরোধ গড়ে তুলতে নেতৃত্ব দিচ্ছেন।'
+  );
+  const [bioWhatsapp, setBioWhatsapp] = useState(
+    currentSpammerProfile?.whatsapp || '+601114303075'
+  );
+  const [bioProfileImage, setBioProfileImage] = useState<string | null>(
+    currentSpammerProfile?.avatarUrl || currentUser.avatarUrl || '/raj_alamin.png'
+  );
 
-  const handleImageUpload = (
+  // Spammer Notable Operations
+  const [spammerOps, setSpammerOps] = useState<{ year: string; title: string; description: string }[]>(() => {
+    if (currentSpammerProfile && currentSpammerProfile.famousOperations && currentSpammerProfile.famousOperations.length > 0) {
+      return currentSpammerProfile.famousOperations;
+    }
+    return [
+      {
+        year: '2014',
+        title: 'Founding Offensive',
+        description: 'Established National Cyber Team and coordinated mass anti-scam defense.',
+      },
+      {
+        year: '2018',
+        title: 'Mass Impersonation Purge',
+        description: 'Decommissioned 600+ fraud networks targeting creators and public figures.',
+      },
+      {
+        year: '2023',
+        title: 'Op Cyber Shield',
+        description: 'Protected verified national assets and conducted decisive counter-strikes.',
+      },
+    ];
+  });
+
+  const [newSpammerOpYear, setNewSpammerOpYear] = useState('');
+  const [newSpammerOpTitle, setNewSpammerOpTitle] = useState('');
+  const [newSpammerOpDesc, setNewSpammerOpDesc] = useState('');
+
+  const handleAddSpammerOp = () => {
+    if (!newSpammerOpTitle.trim() || !newSpammerOpDesc.trim()) return;
+    const op = {
+      year: newSpammerOpYear.trim() || '2024',
+      title: newSpammerOpTitle.trim(),
+      description: newSpammerOpDesc.trim(),
+    };
+    setSpammerOps((prev) => [...prev, op]);
+    setNewSpammerOpYear('');
+    setNewSpammerOpTitle('');
+    setNewSpammerOpDesc('');
+  };
+
+  const handleRemoveSpammerOp = (index: number) => {
+    setSpammerOps((prev) => prev.filter((_, i) => i !== index));
+  };
+
+  useEffect(() => {
+    if (currentSpammerProfile) {
+      setBioName(currentSpammerProfile.name);
+      setBioSelectTeam(currentSpammerProfile.team);
+      setBioAboutYou(currentSpammerProfile.bioBangla || currentSpammerProfile.bioEnglish);
+      if (currentSpammerProfile.whatsapp) {
+        setBioWhatsapp(currentSpammerProfile.whatsapp);
+      }
+      if (currentSpammerProfile.avatarUrl) {
+        setBioProfileImage(currentSpammerProfile.avatarUrl);
+      }
+      if (currentSpammerProfile.famousOperations) {
+        setSpammerOps(currentSpammerProfile.famousOperations);
+      }
+    }
+  }, [currentSpammerProfile]);
+
+  // -------------------------------------------------------------
+  // TEAM BIO / ABOUT PAGE FORM STATE (Pre-populated from Team Wiki)
+  // -------------------------------------------------------------
+  const [teamName, setTeamName] = useState(
+    currentTeamProfile?.name || 'National Cyber Team'
+  );
+  const [teamStartedOn, setTeamStartedOn] = useState(
+    currentTeamProfile?.founded || '2024'
+  );
+  const [teamFounder, setTeamFounder] = useState(
+    currentTeamProfile?.leader || currentUser.name || 'Raj Alamin'
+  );
+  const [teamAbout, setTeamAbout] = useState(
+    currentTeamProfile?.manifestoBangla ||
+      currentTeamProfile?.manifestoEnglish ||
+      'ন্যাশনাল সাইবার টিম (National Cyber Team) সাইবার স্পেসে সত্য, সার্বভৌমত্ব ও ন্যায়বিচার প্রতিষ্ঠায় প্রতিষ্ঠিত শীর্ষস্থানীয় সাইবার প্রতিরোধ দল। আমরা কখনো মাথা নত করি না।'
+  );
+  const [teamProfileImage, setTeamProfileImage] = useState<string | null>(
+    '/nct_logo.svg'
+  );
+  const [applyForTopTeam, setApplyForTopTeam] = useState(true);
+
+  // Team Activists (এক্টিভিস্টবৃন্দ)
+  const [teamActivists, setTeamActivists] = useState<string[]>(() => {
+    if (currentTeamProfile && currentTeamProfile.keyMembers && currentTeamProfile.keyMembers.length > 0) {
+      return currentTeamProfile.keyMembers;
+    }
+    return ['Raj Alamin', 'Cyber Ghost', 'Shadow Strike', 'Byte Striker'];
+  });
+  const [newActivistName, setNewActivistName] = useState('');
+  const [teamMemberCount, setTeamMemberCount] = useState<number>(
+    currentTeamProfile?.memberCount || 380
+  );
+
+  const handleAddActivist = () => {
+    if (!newActivistName.trim()) return;
+    if (teamActivists.includes(newActivistName.trim())) return;
+    setTeamActivists((prev) => [...prev, newActivistName.trim()]);
+    setNewActivistName('');
+  };
+
+  const handleRemoveActivist = (index: number) => {
+    setTeamActivists((prev) => prev.filter((_, i) => i !== index));
+  };
+
+  // Team Notable Operations (ঐতিহাসিক অপারেশন ও সাফল্য)
+  const [teamOps, setTeamOps] = useState<{ year: string; opName: string; impact: string }[]>(() => {
+    if (currentTeamProfile && currentTeamProfile.notableOps) {
+      return currentTeamProfile.notableOps;
+    }
+    return [
+      {
+        year: '2024',
+        opName: 'National Guard Protocol',
+        impact: 'Takedown of 500+ hostile spam and phishing links',
+      },
+      {
+        year: '2025',
+        opName: 'Cyber Sentinel 25',
+        impact: 'Protected national cyberspace community infrastructure',
+      },
+    ];
+  });
+
+  const [newOpYear, setNewOpYear] = useState('');
+  const [newOpName, setNewOpName] = useState('');
+  const [newOpImpact, setNewOpImpact] = useState('');
+
+  const handleAddOp = () => {
+    if (!newOpName.trim() || !newOpImpact.trim()) return;
+    const op = {
+      year: newOpYear.trim() || '2024',
+      opName: newOpName.trim(),
+      impact: newOpImpact.trim(),
+    };
+    setTeamOps((prev) => [...prev, op]);
+    setNewOpYear('');
+    setNewOpName('');
+    setNewOpImpact('');
+  };
+
+  const handleRemoveOp = (index: number) => {
+    setTeamOps((prev) => prev.filter((_, i) => i !== index));
+  };
+
+  useEffect(() => {
+    if (currentTeamProfile) {
+      setTeamName(currentTeamProfile.name);
+      setTeamStartedOn(currentTeamProfile.founded);
+      setTeamFounder(currentTeamProfile.leader);
+      setTeamAbout(currentTeamProfile.manifestoBangla || currentTeamProfile.manifestoEnglish);
+      if (currentTeamProfile.notableOps) {
+        setTeamOps(currentTeamProfile.notableOps);
+      }
+      if (currentTeamProfile.keyMembers && currentTeamProfile.keyMembers.length > 0) {
+        setTeamActivists(currentTeamProfile.keyMembers);
+      }
+      if (currentTeamProfile.memberCount) {
+        setTeamMemberCount(currentTeamProfile.memberCount);
+      }
+    }
+  }, [currentTeamProfile]);
+
+  const handleFileUpload = (
     e: React.ChangeEvent<HTMLInputElement>,
     setter: (val: string) => void
   ) => {
@@ -72,15 +250,19 @@ export const UserDashboardView: React.FC<UserDashboardViewProps> = ({
   const handleBioSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!bioName.trim()) return;
+    
     onSubmitUserBio({
       name: bioName.trim(),
       startedOn: bioStartedOn.trim(),
       selectTeam: bioSelectTeam.trim(),
       aboutYou: bioAboutYou.trim(),
+      whatsapp: bioWhatsapp.trim(),
       profileImage: bioProfileImage || undefined,
+      famousOperations: spammerOps,
     });
-    setNotification('Your Bio has been submitted for approval!');
-    setTimeout(() => setNotification(null), 3000);
+    
+    setNotification('আপনার About Page / Spammer Wiki তথ্য ও অপারেশন সফলভাবে আপডেট হয়েছে!');
+    setTimeout(() => setNotification(null), 4000);
   };
 
   const handleTeamSubmit = (e: React.FormEvent) => {
@@ -93,48 +275,23 @@ export const UserDashboardView: React.FC<UserDashboardViewProps> = ({
       about: teamAbout.trim(),
       profileImage: teamProfileImage || undefined,
       applyForTopTeam,
+      memberCount: teamMemberCount,
+      activists: teamActivists,
+      notableOps: teamOps,
     });
-    setNotification('Team Bio submitted for approval!');
-    setTeamName('');
-    setTeamFounder('');
-    setTeamAbout('');
-    setTimeout(() => setNotification(null), 3000);
+    setNotification('আপনার Team Bio, এক্টিভিস্ট ও ঐতিহাসিক অপারেশন সফলভাবে আপডেট হয়েছে!');
+    setTimeout(() => setNotification(null), 4000);
   };
 
-  const handleWorkSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!workTitle.trim()) return;
-    onSubmitWork({
-      title: workTitle.trim(),
-      selectPlatform: workPlatform.trim(),
-      typeOfWork: workType.trim(),
-      successDate: workSuccessDate.trim(),
-      selectTeam: workSelectTeam.trim(),
-      victimUrl: workVictimUrl.trim(),
-      screenShotUrl: workScreenShot || undefined,
-    });
-    setNotification('Work submission recorded in Contributions!');
-    setWorkTitle('');
-    setWorkVictimUrl('');
-    setTimeout(() => setNotification(null), 3000);
-  };
-
-  const handleCopyLink = (link: string, id: string) => {
-    navigator.clipboard.writeText(link);
-    setCopiedId(id);
-    setTimeout(() => setCopiedId(null), 2000);
-  };
-
-  // Default avatar image (matching the photo of Raj Alamin with sunglasses)
-  const defaultAvatar = currentUser.avatarUrl || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=150&q=80';
+  const activeAvatar = bioProfileImage || currentSpammerProfile?.avatarUrl || currentUser.avatarUrl || '/raj_alamin.png';
+  const activeTeamLogo = teamProfileImage || '/nct_logo.svg';
 
   return (
     <div className="w-full min-h-screen bg-white flex flex-col justify-between select-none">
       <div>
-        {/* Header strictly matching Image 5, 6, 7 */}
+        {/* Top Header */}
         <header className="w-full bg-[#f4f4f4] select-none border-b border-zinc-200/50">
           <div className="w-full px-4 sm:px-6 h-16 sm:h-18 flex items-center justify-between">
-            {/* DarkHUB Logo */}
             <button 
               onClick={onNavigateHome}
               className="group focus:outline-none flex items-center text-left"
@@ -152,31 +309,27 @@ export const UserDashboardView: React.FC<UserDashboardViewProps> = ({
               </div>
             </button>
 
-            {/* Circular User Profile Avatar (Matches Image 5, 6, 7) */}
-            <div className="w-12 h-12 rounded-full overflow-hidden border-2 border-zinc-300 shadow-xs cursor-pointer">
-              <img
-                src={defaultAvatar}
-                alt={currentUser.name}
-                className="w-full h-full object-cover"
-                onError={(e) => {
-                  (e.target as HTMLElement).style.display = 'none';
-                }}
-              />
+            <div className="flex items-center gap-3">
+              <button
+                onClick={onNavigateHome}
+                className="text-xs sm:text-sm font-bold text-zinc-700 hover:text-black transition-colors"
+              >
+                Home
+              </button>
+              <div className="w-10 h-10 rounded-full overflow-hidden border-2 border-zinc-400 bg-zinc-200">
+                <img
+                  src={activeAvatar}
+                  alt={currentUser.name}
+                  className="w-full h-full object-cover"
+                />
+              </div>
             </div>
           </div>
         </header>
 
-        {/* Greeting Banner */}
-        <div className="w-full max-w-xl mx-auto px-4 pt-4 pb-2">
-          <h2 className="text-xl sm:text-2xl font-bold text-black tracking-tight">
-            Welcome {currentUser.name || 'Raj Alamin'}
-          </h2>
-        </div>
-
-        {/* Navigation Tab Bar (Matches Image 5, 6, 7) */}
-        <div className="w-full max-w-xl mx-auto px-3 sm:px-4 py-2">
-          <div className="bg-[#800000] text-white rounded-lg p-1 flex items-center justify-between shadow-md text-xs sm:text-sm font-bold">
-            {/* Submit Bio Tab */}
+        {/* Dashboard Navigation Bar */}
+        <div className="w-full bg-[#B20000] text-white select-none shadow-sm">
+          <div className="max-w-xl mx-auto px-2 sm:px-4 flex items-center justify-between py-1 text-xs sm:text-sm font-bold">
             <button
               onClick={() => setActiveTab('submit-bio')}
               className={`flex-1 py-2 px-1 text-center rounded-md transition-all whitespace-nowrap ${
@@ -188,7 +341,6 @@ export const UserDashboardView: React.FC<UserDashboardViewProps> = ({
               Submit Bio
             </button>
 
-            {/* Team Bio Tab */}
             <button
               onClick={() => setActiveTab('team-bio')}
               className={`flex-1 py-2 px-1 text-center rounded-md transition-all whitespace-nowrap ${
@@ -200,19 +352,6 @@ export const UserDashboardView: React.FC<UserDashboardViewProps> = ({
               Team Bio
             </button>
 
-            {/* Submit Work Tab */}
-            <button
-              onClick={() => setActiveTab('submit-work')}
-              className={`flex-1 py-2 px-1 text-center rounded-md transition-all whitespace-nowrap ${
-                activeTab === 'submit-work'
-                  ? 'bg-[#980000] border border-white/60 shadow-xs'
-                  : 'hover:bg-white/10 text-white/90'
-              }`}
-            >
-              Submit Work
-            </button>
-
-            {/* Sign Out Button */}
             <button
               onClick={onSignOut}
               className="py-2 px-3 text-center rounded-md bg-[#800000] hover:bg-black/30 text-white/95 transition-all whitespace-nowrap border-l border-white/20"
@@ -231,10 +370,61 @@ export const UserDashboardView: React.FC<UserDashboardViewProps> = ({
           </div>
         )}
 
-        {/* TAB 1: Submit Bio Form (Exact replica of Image 5) */}
+        {/* TAB 1: Submit Bio Form & Spammer Wiki Operations */}
         {activeTab === 'submit-bio' && (
-          <div className="w-full max-w-xl mx-auto px-3 sm:px-4 py-3">
+          <div className="w-full max-w-xl mx-auto px-3 sm:px-4 py-3 space-y-4">
+            
+            {/* Live Spammer Wiki Preview Card */}
+            <div className="bg-[#FAF2F2] border-2 border-red-200/80 rounded-2xl p-4 sm:p-5 shadow-xs flex flex-col sm:flex-row items-center justify-between gap-4">
+              <div className="flex items-center gap-3.5">
+                <div className="w-14 h-14 rounded-full overflow-hidden border-2 border-red-300 shrink-0 bg-zinc-200 shadow-sm">
+                  <img
+                    src={activeAvatar}
+                    alt={bioName}
+                    className="w-full h-full object-cover"
+                  />
+                </div>
+                <div>
+                  <div className="flex items-center gap-1.5">
+                    <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+                    <span className="text-[11px] font-bold text-emerald-700 uppercase tracking-wider">
+                      Live on Spammer Wiki
+                    </span>
+                  </div>
+                  <h3 className="text-lg font-black text-black leading-tight">
+                    {bioName}
+                  </h3>
+                  <p className="text-xs text-zinc-600 font-medium">
+                    {bioSelectTeam} · Since {bioStartedOn} till now
+                  </p>
+                </div>
+              </div>
+
+              {onViewMyWiki && currentSpammerProfile && (
+                <button
+                  type="button"
+                  onClick={() => onViewMyWiki(currentSpammerProfile)}
+                  className="w-full sm:w-auto px-4 py-2 bg-black hover:bg-zinc-800 text-white text-xs sm:text-sm font-bold rounded-xl shadow-xs transition-transform active:scale-95 flex items-center justify-center gap-2 shrink-0"
+                >
+                  <span>View About Page</span>
+                  <span>→</span>
+                </button>
+              )}
+            </div>
+
+            {/* Submit Bio Edit Form */}
             <div className="bg-[#F7ECEB] rounded-2xl p-5 sm:p-6 space-y-4 shadow-xs">
+              <div className="border-b border-white/60 pb-2 flex items-center justify-between">
+                <div>
+                  <h2 className="text-base sm:text-lg font-bold text-black">
+                    Submit / Edit Your Bio (About Page Info)
+                  </h2>
+                  <p className="text-xs text-zinc-600">
+                    এখানে পূরণ করা তথ্যগুলো সরাসরি আপনার Spammer Wiki / About Page-এ যুক্ত হবে।
+                  </p>
+                </div>
+              </div>
+
               <form onSubmit={handleBioSubmit} className="space-y-4">
                 {/* Name */}
                 <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-4">
@@ -246,6 +436,7 @@ export const UserDashboardView: React.FC<UserDashboardViewProps> = ({
                     required
                     value={bioName}
                     onChange={(e) => setBioName(e.target.value)}
+                    placeholder="Your Name (e.g. Raj Alamin)"
                     className="flex-1 h-9 sm:h-10 px-3 bg-white rounded-md border border-zinc-200 text-black font-medium focus:outline-none focus:ring-1 focus:ring-black"
                   />
                 </div>
@@ -259,6 +450,7 @@ export const UserDashboardView: React.FC<UserDashboardViewProps> = ({
                     type="text"
                     value={bioStartedOn}
                     onChange={(e) => setBioStartedOn(e.target.value)}
+                    placeholder="Year (e.g. 2014)"
                     className="flex-1 h-9 sm:h-10 px-3 bg-white rounded-md border border-zinc-200 text-black font-medium focus:outline-none focus:ring-1 focus:ring-black"
                   />
                 </div>
@@ -272,7 +464,21 @@ export const UserDashboardView: React.FC<UserDashboardViewProps> = ({
                     type="text"
                     value={bioSelectTeam}
                     onChange={(e) => setBioSelectTeam(e.target.value)}
-                    placeholder="Team Name (e.g. Bangladesh Cyber Army)"
+                    placeholder="Team Name (e.g. National Cyber Team or RDX Zone)"
+                    className="flex-1 h-9 sm:h-10 px-3 bg-white rounded-md border border-zinc-200 text-black font-medium focus:outline-none focus:ring-1 focus:ring-black"
+                  />
+                </div>
+
+                {/* WhatsApp Number (Appears on Top Spammers & Spammer Wiki) */}
+                <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-4">
+                  <label className="w-28 text-sm sm:text-base font-bold text-black shrink-0">
+                    WhatsApp No
+                  </label>
+                  <input
+                    type="text"
+                    value={bioWhatsapp}
+                    onChange={(e) => setBioWhatsapp(e.target.value)}
+                    placeholder="e.g. +601114303075"
                     className="flex-1 h-9 sm:h-10 px-3 bg-white rounded-md border border-zinc-200 text-black font-medium focus:outline-none focus:ring-1 focus:ring-black"
                   />
                 </div>
@@ -283,50 +489,150 @@ export const UserDashboardView: React.FC<UserDashboardViewProps> = ({
                     About You
                   </label>
                   <textarea
-                    rows={6}
+                    rows={5}
                     value={bioAboutYou}
                     onChange={(e) => setBioAboutYou(e.target.value)}
-                    className="flex-1 p-3 bg-white rounded-md border border-zinc-200 text-black font-medium focus:outline-none focus:ring-1 focus:ring-black"
+                    placeholder="Write detailed biography and historical cyber background..."
+                    className="flex-1 p-3 bg-white rounded-md border border-zinc-200 text-black font-medium focus:outline-none focus:ring-1 focus:ring-black leading-relaxed font-['Hind_Siliguri',sans-serif]"
                   />
                 </div>
 
-                {/* Select Profile (Square Upload Box matching Image 5) */}
-                <div className="pt-2">
-                  <label className="block text-sm sm:text-base font-bold text-black mb-2">
-                    Select Profile
+                {/* Profile Image (File Upload) */}
+                <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-4">
+                  <label className="w-28 text-sm sm:text-base font-bold text-black shrink-0">
+                    Profile Image
                   </label>
-                  <input
-                    type="file"
-                    ref={bioFileRef}
-                    accept="image/*"
-                    onChange={(e) => handleImageUpload(e, setBioProfileImage)}
-                    className="hidden"
-                  />
-                  <div
-                    onClick={() => bioFileRef.current?.click()}
-                    className="w-36 h-36 bg-white rounded-md border border-zinc-200 flex flex-col items-center justify-center cursor-pointer hover:bg-zinc-50 active:scale-98 transition-all overflow-hidden shadow-2xs"
-                  >
-                    {bioProfileImage ? (
-                      <img
-                        src={bioProfileImage}
-                        alt="Profile Preview"
-                        className="w-full h-full object-cover"
-                      />
-                    ) : (
-                      <span className="text-zinc-400 font-semibold text-base">
-                        Upload
-                      </span>
+                  <div className="flex-1 flex items-center gap-3">
+                    <input
+                      type="file"
+                      accept="image/*"
+                      onChange={(e) => handleFileUpload(e, setBioProfileImage)}
+                      className="text-xs text-zinc-600 file:mr-3 file:py-1.5 file:px-3 file:rounded-md file:border-0 file:text-xs file:font-bold file:bg-zinc-200 file:text-black hover:file:bg-zinc-300 cursor-pointer"
+                    />
+                    {bioProfileImage && (
+                      <div className="w-8 h-8 rounded-full overflow-hidden border border-zinc-400 shrink-0">
+                        <img
+                          src={bioProfileImage}
+                          alt="Preview"
+                          className="w-full h-full object-cover"
+                        />
+                      </div>
                     )}
                   </div>
                 </div>
 
-                {/* Submit for Approval Button */}
-                <div className="pt-4 text-center">
+                {/* Spammer Wiki: ঐতিহাসিক অপারেশন ও সাফল্য (Operations Management) */}
+                <div className="pt-3 border-t border-white/70 space-y-3 text-left">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <label className="text-sm sm:text-base font-bold text-black block">
+                        ব্যক্তিগত ঐতিহাসিক অপারেশন ও সাফল্য
+                      </label>
+                      <span className="text-[11px] text-zinc-600 block">
+                        আপনার পরিচালিত সফল সাইবার অপারেশনগুলো Spammer Wiki-তে প্রদর্শিত হবে।
+                      </span>
+                    </div>
+                    <span className="px-2 py-0.5 bg-black text-white text-[11px] font-bold rounded">
+                      {spammerOps.length} টি অপারেশন
+                    </span>
+                  </div>
+
+                  {/* Existing Spammer Operations List */}
+                  <div className="space-y-2">
+                    {spammerOps.map((op, idx) => (
+                      <div
+                        key={idx}
+                        className="p-3 bg-white rounded-xl border border-zinc-300 shadow-2xs flex flex-col sm:flex-row sm:items-center justify-between gap-2.5"
+                      >
+                        <div className="space-y-1">
+                          <div className="flex items-center gap-2">
+                            <span className="px-2 py-0.5 bg-black text-white text-xs font-mono font-bold rounded">
+                              {op.year}
+                            </span>
+                            <span className="font-black text-sm text-black">
+                              {op.title}
+                            </span>
+                          </div>
+                          <p className="text-xs text-zinc-600 leading-relaxed font-['Hind_Siliguri',sans-serif]">
+                            {op.description}
+                          </p>
+                        </div>
+
+                        <button
+                          type="button"
+                          onClick={() => handleRemoveSpammerOp(idx)}
+                          className="self-end sm:self-center px-2.5 py-1 text-xs font-bold text-red-600 hover:bg-red-50 rounded-md transition-colors shrink-0"
+                          title="অপারেশন মুছে ফেলুন"
+                        >
+                          ✕ Remove
+                        </button>
+                      </div>
+                    ))}
+
+                    {spammerOps.length === 0 && (
+                      <div className="p-3 bg-white/60 rounded-lg text-center text-xs text-zinc-500 italic">
+                        কোনো ব্যক্তিগত অপারেশন যোগ করা নেই। নিচে নতুন অপারেশন যোগ করুন।
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Add New Spammer Operation */}
+                  <div className="p-3 bg-white/80 border border-dashed border-zinc-400 rounded-xl space-y-2 text-left">
+                    <span className="text-xs font-bold text-black flex items-center gap-1.5">
+                      <span className="w-2 h-2 rounded-full bg-black" />
+                      + নতুন ব্যক্তিগত অপারেশন যোগ করুন
+                    </span>
+                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
+                      <input
+                        type="text"
+                        value={newSpammerOpYear}
+                        onChange={(e) => setNewSpammerOpYear(e.target.value)}
+                        placeholder="বছর (e.g. 2024)"
+                        className="h-9 px-2.5 bg-white rounded-md border border-zinc-300 text-xs font-medium text-black focus:outline-none focus:ring-1 focus:ring-black"
+                      />
+                      <input
+                        type="text"
+                        value={newSpammerOpTitle}
+                        onChange={(e) => setNewSpammerOpTitle(e.target.value)}
+                        placeholder="অপারেশনের শিরোনাম (e.g. Mass Botnet Purge)"
+                        className="h-9 px-2.5 bg-white rounded-md border border-zinc-300 text-xs font-medium text-black focus:outline-none focus:ring-1 focus:ring-black sm:col-span-2"
+                      />
+                    </div>
+                    <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
+                      <input
+                        type="text"
+                        value={newSpammerOpDesc}
+                        onChange={(e) => setNewSpammerOpDesc(e.target.value)}
+                        placeholder="অপারেশনের বর্ণনা ও সফলতা (e.g. ৩০০+ ভুয়া পেজ অপসারণ)"
+                        className="flex-1 h-9 px-2.5 bg-white rounded-md border border-zinc-300 text-xs font-medium text-black focus:outline-none focus:ring-1 focus:ring-black font-['Hind_Siliguri',sans-serif]"
+                      />
+                      <button
+                        type="button"
+                        onClick={handleAddSpammerOp}
+                        className="px-4 py-2 bg-black hover:bg-zinc-800 text-white text-xs font-bold rounded-md shrink-0 active:scale-95 transition-all"
+                      >
+                        + Add Op
+                      </button>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Submit / Update Button */}
+                <div className="pt-2 flex flex-col sm:flex-row items-center gap-3 justify-end">
+                  {onViewMyWiki && currentSpammerProfile && (
+                    <button
+                      type="button"
+                      onClick={() => onViewMyWiki(currentSpammerProfile)}
+                      className="w-full sm:w-auto px-4 py-2 border border-black text-black font-bold text-xs sm:text-sm rounded-md hover:bg-black/5"
+                    >
+                      Preview About Page
+                    </button>
+                  )}
                   <button
                     type="submit"
-                    className="px-6 py-2.5 bg-[#800000] text-white font-bold rounded-lg hover:bg-[#960000] active:scale-95 transition-all shadow-md text-sm sm:text-base"
+                    className="w-full sm:w-auto px-6 py-2 bg-black hover:bg-zinc-800 text-white font-bold text-sm rounded-md active:scale-95 transition-all shadow-xs"
                   >
-                    Submit for Approval
+                    Save & Update About Info
                   </button>
                 </div>
               </form>
@@ -334,10 +640,64 @@ export const UserDashboardView: React.FC<UserDashboardViewProps> = ({
           </div>
         )}
 
-        {/* TAB 2: Team Bio Form (Exact replica of Image 6) */}
+        {/* TAB 2: Team Bio Form & Live Team Wiki Preview */}
         {activeTab === 'team-bio' && (
-          <div className="w-full max-w-xl mx-auto px-3 sm:px-4 py-3">
+          <div className="w-full max-w-xl mx-auto px-3 sm:px-4 py-3 space-y-4">
+            
+            {/* Live Team Wiki Preview Card */}
+            <div className="bg-[#FAF2F2] border-2 border-red-200/80 rounded-2xl p-4 sm:p-5 shadow-xs flex flex-col sm:flex-row items-center justify-between gap-4">
+              <div className="flex items-center gap-3.5">
+                <div className="w-14 h-14 rounded-full overflow-hidden border-2 border-zinc-800 bg-black shrink-0 shadow-sm flex items-center justify-center">
+                  <img
+                    src={activeTeamLogo}
+                    alt={teamName}
+                    className="w-full h-full object-cover"
+                    onError={(e) => {
+                      (e.target as HTMLImageElement).src = '/nct_logo.svg';
+                    }}
+                  />
+                </div>
+                <div>
+                  <div className="flex items-center gap-1.5">
+                    <span className="w-2 h-2 rounded-full bg-red-600 animate-pulse" />
+                    <span className="text-[11px] font-bold text-red-700 uppercase tracking-wider">
+                      Live on Team Wiki
+                    </span>
+                  </div>
+                  <h3 className="text-lg font-black text-black leading-tight">
+                    {teamName}
+                  </h3>
+                  <p className="text-xs text-zinc-600 font-medium">
+                    Since {teamStartedOn} · Leader: {teamFounder}
+                  </p>
+                </div>
+              </div>
+
+              {onViewTeamWiki && currentTeamProfile && (
+                <button
+                  type="button"
+                  onClick={() => onViewTeamWiki(currentTeamProfile)}
+                  className="w-full sm:w-auto px-4 py-2 bg-black hover:bg-zinc-800 text-white text-xs sm:text-sm font-bold rounded-xl shadow-xs transition-transform active:scale-95 flex items-center justify-center gap-2 shrink-0"
+                >
+                  <span>View Team Wiki</span>
+                  <span>→</span>
+                </button>
+              )}
+            </div>
+
+            {/* Team Bio Edit Form */}
             <div className="bg-[#F7ECEB] rounded-2xl p-5 sm:p-6 space-y-4 shadow-xs">
+              <div className="border-b border-white/60 pb-2 flex items-center justify-between">
+                <div>
+                  <h2 className="text-base sm:text-lg font-bold text-black">
+                    Submit / Edit Team Bio (Team Wiki Info)
+                  </h2>
+                  <p className="text-xs text-zinc-600">
+                    এখানে পূরণ করা তথ্যগুলো সরাসরি আপনার টিমের Team Wiki / About Page-এ প্রদর্শিত হবে।
+                  </p>
+                </div>
+              </div>
+
               <form onSubmit={handleTeamSubmit} className="space-y-4">
                 {/* Team Name */}
                 <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-4">
@@ -349,6 +709,7 @@ export const UserDashboardView: React.FC<UserDashboardViewProps> = ({
                     required
                     value={teamName}
                     onChange={(e) => setTeamName(e.target.value)}
+                    placeholder="Enter your team name (e.g. National Cyber Team)"
                     className="flex-1 h-9 sm:h-10 px-3 bg-white rounded-md border border-zinc-200 text-black font-medium focus:outline-none focus:ring-1 focus:ring-black"
                   />
                 </div>
@@ -362,6 +723,7 @@ export const UserDashboardView: React.FC<UserDashboardViewProps> = ({
                     type="text"
                     value={teamStartedOn}
                     onChange={(e) => setTeamStartedOn(e.target.value)}
+                    placeholder="Founded Year (e.g. 2024)"
                     className="flex-1 h-9 sm:h-10 px-3 bg-white rounded-md border border-zinc-200 text-black font-medium focus:outline-none focus:ring-1 focus:ring-black"
                   />
                 </div>
@@ -369,12 +731,13 @@ export const UserDashboardView: React.FC<UserDashboardViewProps> = ({
                 {/* Founder */}
                 <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-4">
                   <label className="w-28 text-sm sm:text-base font-bold text-black shrink-0">
-                    Founder
+                    Founder / Lead
                   </label>
                   <input
                     type="text"
                     value={teamFounder}
                     onChange={(e) => setTeamFounder(e.target.value)}
+                    placeholder="Founder or Commander Name"
                     className="flex-1 h-9 sm:h-10 px-3 bg-white rounded-md border border-zinc-200 text-black font-medium focus:outline-none focus:ring-1 focus:ring-black"
                   />
                 </div>
@@ -385,247 +748,253 @@ export const UserDashboardView: React.FC<UserDashboardViewProps> = ({
                     About
                   </label>
                   <textarea
-                    rows={6}
+                    rows={5}
                     value={teamAbout}
                     onChange={(e) => setTeamAbout(e.target.value)}
-                    className="flex-1 p-3 bg-white rounded-md border border-zinc-200 text-black font-medium focus:outline-none focus:ring-1 focus:ring-black"
+                    placeholder="Team manifesto, mission, operations history and cyber impact..."
+                    className="flex-1 p-3 bg-white rounded-md border border-zinc-200 text-black font-medium focus:outline-none focus:ring-1 focus:ring-black leading-relaxed font-['Hind_Siliguri',sans-serif]"
                   />
                 </div>
 
-                {/* Select Profile (Square Upload Box matching Image 6) */}
-                <div className="pt-2">
-                  <label className="block text-sm sm:text-base font-bold text-black mb-2">
-                    Select Profile
+                {/* Team Profile Image */}
+                <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-4">
+                  <label className="w-28 text-sm sm:text-base font-bold text-black shrink-0">
+                    Team Logo
                   </label>
-                  <input
-                    type="file"
-                    ref={teamFileRef}
-                    accept="image/*"
-                    onChange={(e) => handleImageUpload(e, setTeamProfileImage)}
-                    className="hidden"
-                  />
-                  <div
-                    onClick={() => teamFileRef.current?.click()}
-                    className="w-36 h-36 bg-white rounded-md border border-zinc-200 flex flex-col items-center justify-center cursor-pointer hover:bg-zinc-50 active:scale-98 transition-all overflow-hidden shadow-2xs"
-                  >
-                    {teamProfileImage ? (
+                  <div className="flex-1 flex items-center gap-3">
+                    <input
+                      type="file"
+                      accept="image/*"
+                      onChange={(e) => handleFileUpload(e, setTeamProfileImage)}
+                      className="text-xs text-zinc-600 file:mr-3 file:py-1.5 file:px-3 file:rounded-md file:border-0 file:text-xs file:font-bold file:bg-zinc-200 file:text-black hover:file:bg-zinc-300 cursor-pointer"
+                    />
+                    <div className="w-9 h-9 rounded-full overflow-hidden border border-zinc-700 bg-black shrink-0 flex items-center justify-center">
                       <img
-                        src={teamProfileImage}
-                        alt="Team Logo Preview"
+                        src={activeTeamLogo}
+                        alt="Logo Preview"
                         className="w-full h-full object-cover"
                       />
-                    ) : (
-                      <span className="text-zinc-400 font-semibold text-base">
-                        Upload
-                      </span>
-                    )}
+                    </div>
                   </div>
                 </div>
 
-                {/* Apply for Top Team Checkbox (Matches Image 6) */}
-                <div className="pt-3 flex items-center gap-3">
+                {/* টিমের এক্টিভিস্টবৃন্দ ও সক্রিয় সদস্য সংখ্যা (Team Activists & Member Count) */}
+                <div className="pt-3 border-t border-white/70 space-y-3 text-left">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <label className="text-sm sm:text-base font-bold text-black block">
+                        টিমের এক্টিভিস্ট ও সদস্য ব্যবস্থাপনা
+                      </label>
+                      <span className="text-[11px] text-zinc-600 block">
+                        টিমের শীর্ষ এক্টিভিস্টদের নাম যোগ করুন, যা Team Wiki-তে প্রকাশিত হবে।
+                      </span>
+                    </div>
+                  </div>
+
+                  {/* Member Count Input */}
+                  <div className="flex flex-col sm:flex-row sm:items-center gap-2">
+                    <label className="text-xs font-bold text-zinc-700 w-32 shrink-0">
+                      সক্রিয় সদস্য সংখ্যা:
+                    </label>
+                    <input
+                      type="number"
+                      value={teamMemberCount}
+                      onChange={(e) => setTeamMemberCount(parseInt(e.target.value) || 0)}
+                      className="w-32 h-9 px-2.5 bg-white rounded-md border border-zinc-300 text-xs font-mono font-bold text-black focus:outline-none focus:ring-1 focus:ring-black"
+                    />
+                    <span className="text-xs text-zinc-500">+ Members</span>
+                  </div>
+
+                  {/* Activists Tags List */}
+                  <div>
+                    <label className="text-xs font-bold text-zinc-700 block mb-1.5">
+                      বর্তমান এক্টিভিস্টবৃন্দ ({teamActivists.length}):
+                    </label>
+                    <div className="flex flex-wrap gap-1.5 min-h-[36px] p-2 bg-white/70 border border-zinc-300 rounded-lg">
+                      {teamActivists.map((act, idx) => (
+                        <span
+                          key={idx}
+                          className="px-2.5 py-1 bg-red-100 text-red-900 border border-red-200 text-xs font-bold rounded-md flex items-center gap-1.5 shadow-2xs"
+                        >
+                          <span className="w-1.5 h-1.5 rounded-full bg-red-600" />
+                          <span>{act}</span>
+                          <button
+                            type="button"
+                            onClick={() => handleRemoveActivist(idx)}
+                            className="text-red-500 hover:text-red-800 ml-1 font-bold text-xs"
+                            title="মুছে ফেলুন"
+                          >
+                            ✕
+                          </button>
+                        </span>
+                      ))}
+
+                      {teamActivists.length === 0 && (
+                        <span className="text-xs text-zinc-400 italic">
+                          কোনো এক্টিভিস্ট যোগ করা নেই। নিচে নাম লিখে যোগ করুন।
+                        </span>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* Add New Activist */}
+                  <div className="flex items-center gap-2">
+                    <input
+                      type="text"
+                      value={newActivistName}
+                      onChange={(e) => setNewActivistName(e.target.value)}
+                      placeholder="নতুন এক্টিভিস্টের নাম (যেমন: Shadow Strike, Cyber Hunter)"
+                      className="flex-1 h-9 px-2.5 bg-white rounded-md border border-zinc-300 text-xs font-medium text-black focus:outline-none focus:ring-1 focus:ring-black"
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter') {
+                          e.preventDefault();
+                          handleAddActivist();
+                        }
+                      }}
+                    />
+                    <button
+                      type="button"
+                      onClick={handleAddActivist}
+                      className="px-4 py-2 bg-black hover:bg-zinc-800 text-white text-xs font-bold rounded-md shrink-0 active:scale-95 transition-all"
+                    >
+                      + Add এক্টিভিস্ট
+                    </button>
+                  </div>
+                </div>
+
+                {/* ঐতিহাসিক অপারেশন ও সাফল্য (Notable Operations & Successes) */}
+                <div className="pt-3 border-t border-white/70 space-y-3 text-left">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <label className="text-sm sm:text-base font-bold text-black block">
+                        টিমের ঐতিহাসিক অপারেশন ও সাফল্য
+                      </label>
+                      <span className="text-[11px] text-zinc-600 block">
+                        আপনার টিমের সফল সাইবার অপারেশনগুলো টিম উইকিতে প্রদর্শন করার জন্য নিচে পরিবর্তন ও যোগ করুন।
+                      </span>
+                    </div>
+                    <span className="px-2 py-0.5 bg-black text-white text-[11px] font-bold rounded">
+                      {teamOps.length} টি অপারেশন
+                    </span>
+                  </div>
+
+                  {/* Existing Operations List */}
+                  <div className="space-y-2">
+                    {teamOps.map((op, idx) => (
+                      <div
+                        key={idx}
+                        className="p-3 bg-white rounded-xl border border-zinc-300 shadow-2xs flex flex-col sm:flex-row sm:items-center justify-between gap-2.5"
+                      >
+                        <div className="space-y-1">
+                          <div className="flex items-center gap-2">
+                            <span className="px-2 py-0.5 bg-red-100 text-red-700 text-xs font-mono font-bold rounded">
+                              {op.year}
+                            </span>
+                            <span className="font-black text-sm text-black">
+                              {op.opName}
+                            </span>
+                          </div>
+                          <p className="text-xs text-zinc-600 leading-relaxed font-['Hind_Siliguri',sans-serif]">
+                            {op.impact}
+                          </p>
+                        </div>
+
+                        <button
+                          type="button"
+                          onClick={() => handleRemoveOp(idx)}
+                          className="self-end sm:self-center px-2.5 py-1 text-xs font-bold text-red-600 hover:bg-red-50 rounded-md transition-colors shrink-0"
+                          title="অপারেশন মুছে ফেলুন"
+                        >
+                          ✕ Remove
+                        </button>
+                      </div>
+                    ))}
+
+                    {teamOps.length === 0 && (
+                      <div className="p-3 bg-white/60 rounded-lg text-center text-xs text-zinc-500 italic">
+                        বর্তমানে কোনো অপারেশন যোগ করা নেই। নিচে নতুন অপারেশন যোগ করুন।
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Add New Operation Box */}
+                  <div className="p-3.5 bg-white/80 border border-dashed border-zinc-400 rounded-xl space-y-2.5 text-left">
+                    <span className="text-xs font-bold text-black flex items-center gap-1.5">
+                      <span className="w-2 h-2 rounded-full bg-red-600" />
+                      + নতুন অপারেশন যুক্ত করুন
+                    </span>
+                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
+                      <input
+                        type="text"
+                        value={newOpYear}
+                        onChange={(e) => setNewOpYear(e.target.value)}
+                        placeholder="বছর (যেমন: 2026)"
+                        className="h-9 px-2.5 bg-white rounded-md border border-zinc-300 text-xs font-medium text-black focus:outline-none focus:ring-1 focus:ring-black"
+                      />
+                      <input
+                        type="text"
+                        value={newOpName}
+                        onChange={(e) => setNewOpName(e.target.value)}
+                        placeholder="অপারেশনের নাম (যেমন: Operation Cyber Sentinel)"
+                        className="h-9 px-2.5 bg-white rounded-md border border-zinc-300 text-xs font-medium text-black focus:outline-none focus:ring-1 focus:ring-black sm:col-span-2"
+                      />
+                    </div>
+                    <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
+                      <input
+                        type="text"
+                        value={newOpImpact}
+                        onChange={(e) => setNewOpImpact(e.target.value)}
+                        placeholder="সাফল্য ও প্রভাব (যেমন: ৫০০+ ক্ষতিকর বটনেট ও ফিশিং সার্ভার নিষ্ক্রিয়)"
+                        className="flex-1 h-9 px-2.5 bg-white rounded-md border border-zinc-300 text-xs font-medium text-black focus:outline-none focus:ring-1 focus:ring-black font-['Hind_Siliguri',sans-serif]"
+                      />
+                      <button
+                        type="button"
+                        onClick={handleAddOp}
+                        className="px-4 py-2 bg-black hover:bg-zinc-800 text-white text-xs font-bold rounded-md shrink-0 active:scale-95 transition-all"
+                      >
+                        + Add Op
+                      </button>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Checkbox: Apply for Top Team */}
+                <div className="flex items-center gap-2 pt-1">
                   <input
                     type="checkbox"
                     id="applyTopTeam"
                     checked={applyForTopTeam}
                     onChange={(e) => setApplyForTopTeam(e.target.checked)}
-                    className="w-5 h-5 rounded border-zinc-300 text-red-600 focus:ring-red-500 cursor-pointer"
+                    className="w-4 h-4 rounded text-black focus:ring-black"
                   />
-                  <label
-                    htmlFor="applyTopTeam"
-                    className="text-sm sm:text-base font-bold text-black cursor-pointer"
-                  >
-                    Apply for Top Team <span className="font-normal text-zinc-600">( Optional )</span>
+                  <label htmlFor="applyTopTeam" className="text-sm font-bold text-black cursor-pointer">
+                    Apply for Top Team Directory (শীর্ষ টিম তালিকাভুক্তির জন্য আবেদন)
                   </label>
                 </div>
 
-                {/* Submit for Approval Button */}
-                <div className="pt-4 text-center">
-                  <button
-                    type="submit"
-                    className="px-6 py-2.5 bg-[#800000] text-white font-bold rounded-lg hover:bg-[#960000] active:scale-95 transition-all shadow-md text-sm sm:text-base"
-                  >
-                    Submit for Approval
-                  </button>
-                </div>
-              </form>
-            </div>
-          </div>
-        )}
-
-        {/* TAB 3: Submit Work + Contributions (Exact replica of Image 7) */}
-        {activeTab === 'submit-work' && (
-          <div className="w-full max-w-xl mx-auto px-3 sm:px-4 py-3 space-y-5">
-            {/* Upper Work Form Card */}
-            <div className="bg-[#F7ECEB] rounded-2xl p-5 sm:p-6 space-y-4 shadow-xs">
-              <form onSubmit={handleWorkSubmit} className="space-y-3.5">
-                {/* Title */}
-                <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-4">
-                  <label className="w-32 text-sm sm:text-base font-bold text-black shrink-0">
-                    Title
-                  </label>
-                  <input
-                    type="text"
-                    required
-                    value={workTitle}
-                    onChange={(e) => setWorkTitle(e.target.value)}
-                    placeholder="e.g. Anik এর আইডি সাসপেন্ড করেছি"
-                    className="flex-1 h-9 sm:h-10 px-3 bg-white rounded-md border border-zinc-200 text-black font-medium focus:outline-none focus:ring-1 focus:ring-black"
-                  />
-                </div>
-
-                {/* Select Platform */}
-                <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-4">
-                  <label className="w-32 text-sm sm:text-base font-bold text-black shrink-0">
-                    Select Platform
-                  </label>
-                  <input
-                    type="text"
-                    value={workPlatform}
-                    onChange={(e) => setWorkPlatform(e.target.value)}
-                    placeholder="Facebook / Instagram / Web"
-                    className="flex-1 h-9 sm:h-10 px-3 bg-white rounded-md border border-zinc-200 text-black font-medium focus:outline-none focus:ring-1 focus:ring-black"
-                  />
-                </div>
-
-                {/* Type of Work */}
-                <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-4">
-                  <label className="w-32 text-sm sm:text-base font-bold text-black shrink-0">
-                    Type of Work
-                  </label>
-                  <input
-                    type="text"
-                    value={workType}
-                    onChange={(e) => setWorkType(e.target.value)}
-                    placeholder="Mass Report / Deface / Recon"
-                    className="flex-1 h-9 sm:h-10 px-3 bg-white rounded-md border border-zinc-200 text-black font-medium focus:outline-none focus:ring-1 focus:ring-black"
-                  />
-                </div>
-
-                {/* Success Date */}
-                <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-4">
-                  <label className="w-32 text-sm sm:text-base font-bold text-black shrink-0">
-                    Success Date
-                  </label>
-                  <input
-                    type="text"
-                    value={workSuccessDate}
-                    onChange={(e) => setWorkSuccessDate(e.target.value)}
-                    className="flex-1 h-9 sm:h-10 px-3 bg-white rounded-md border border-zinc-200 text-black font-medium focus:outline-none focus:ring-1 focus:ring-black"
-                  />
-                </div>
-
-                {/* Select Team */}
-                <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-4">
-                  <label className="w-32 text-sm sm:text-base font-bold text-black shrink-0">
-                    Select Team
-                  </label>
-                  <input
-                    type="text"
-                    value={workSelectTeam}
-                    onChange={(e) => setWorkSelectTeam(e.target.value)}
-                    className="flex-1 h-9 sm:h-10 px-3 bg-white rounded-md border border-zinc-200 text-black font-medium focus:outline-none focus:ring-1 focus:ring-black"
-                  />
-                </div>
-
-                {/* Victim Url */}
-                <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-4">
-                  <label className="w-32 text-sm sm:text-base font-bold text-black shrink-0">
-                    Victim Url
-                  </label>
-                  <input
-                    type="text"
-                    value={workVictimUrl}
-                    onChange={(e) => setWorkVictimUrl(e.target.value)}
-                    placeholder="https://facebook.com/..."
-                    className="flex-1 h-9 sm:h-10 px-3 bg-white rounded-md border border-zinc-200 text-black font-medium focus:outline-none focus:ring-1 focus:ring-black"
-                  />
-                </div>
-
-                {/* Screen Shot: Upload Files button (Matches Image 7) */}
-                <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-4 pt-1">
-                  <label className="w-32 text-sm sm:text-base font-bold text-black shrink-0">
-                    Screen Shot
-                  </label>
-                  <input
-                    type="file"
-                    ref={workFileRef}
-                    accept="image/*"
-                    onChange={(e) => handleImageUpload(e, setWorkScreenShot)}
-                    className="hidden"
-                  />
-                  <div className="flex items-center gap-3">
+                {/* Submit / Update Button */}
+                <div className="pt-2 flex flex-col sm:flex-row items-center gap-3 justify-end">
+                  {onViewTeamWiki && currentTeamProfile && (
                     <button
                       type="button"
-                      onClick={() => workFileRef.current?.click()}
-                      className="px-4 py-2 bg-white rounded-md border border-zinc-300 text-zinc-600 font-semibold text-sm hover:bg-zinc-50 active:scale-95 transition-all shadow-2xs"
+                      onClick={() => onViewTeamWiki(currentTeamProfile)}
+                      className="w-full sm:w-auto px-4 py-2 border border-black text-black font-bold text-xs sm:text-sm rounded-md hover:bg-black/5"
                     >
-                      Upload Files
+                      Preview Team Wiki
                     </button>
-                    {workScreenShot && (
-                      <span className="text-xs font-bold text-emerald-700">
-                        ✓ Screenshot Attached
-                      </span>
-                    )}
-                  </div>
-                </div>
-
-                {/* Submit Button (Matches Image 7) */}
-                <div className="pt-4 text-center">
+                  )}
                   <button
                     type="submit"
-                    className="px-12 py-2.5 bg-[#800000] text-white font-black text-xl rounded-xl hover:bg-[#960000] active:scale-95 transition-all shadow-md"
+                    className="w-full sm:w-auto px-6 py-2 bg-black hover:bg-zinc-800 text-white font-bold text-sm rounded-md active:scale-95 transition-all shadow-xs"
                   >
-                    Submit
+                    Save & Update Team Bio
                   </button>
                 </div>
               </form>
             </div>
-
-            {/* Lower Card: Contributions Table (Matches Image 7) */}
-            <div className="bg-[#F7ECEB] rounded-2xl p-5 sm:p-6 space-y-4 shadow-xs">
-              <h3 className="text-xl font-bold text-black text-center">
-                Contributions
-              </h3>
-
-              {/* Red Divider Line */}
-              <div className="w-full h-[2px] bg-red-500" />
-
-              {/* Table */}
-              <div className="overflow-x-auto">
-                <table className="w-full text-left text-sm text-black">
-                  <thead>
-                    <tr className="border-b border-zinc-300/80">
-                      <th className="pb-3 font-bold text-base">Title</th>
-                      <th className="pb-3 font-bold text-base text-center">Post Views</th>
-                      <th className="pb-3 font-bold text-base text-right">Post link</th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-zinc-200">
-                    {works.map((item) => (
-                      <tr key={item.id} className="hover:bg-black/5 transition-colors">
-                        <td className="py-3.5 pr-2 font-medium max-w-[180px] sm:max-w-xs truncate">
-                          {item.title}
-                        </td>
-                        <td className="py-3.5 px-2 text-center font-mono font-semibold tabular-nums">
-                          {item.postViews}
-                        </td>
-                        <td className="py-3.5 pl-2 text-right">
-                          <button
-                            onClick={() => handleCopyLink(item.postLink, item.id)}
-                            className="px-4 py-1 bg-white border border-zinc-300 hover:border-black rounded-md text-xs font-bold text-black shadow-2xs active:scale-95 transition-all"
-                          >
-                            {copiedId === item.id ? 'Copied!' : 'Copy'}
-                          </button>
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            </div>
           </div>
         )}
+
       </div>
 
       <div className="h-6" />

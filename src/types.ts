@@ -36,6 +36,7 @@ export interface SpammerProfile {
     discord?: string;
     github?: string;
   };
+  whatsapp?: string;
   submittedAt?: string;
 }
 
@@ -91,7 +92,13 @@ export interface UserBioSubmission {
   startedOn: string;
   selectTeam: string;
   aboutYou: string;
+  whatsapp?: string;
   profileImage?: string;
+  famousOperations?: {
+    year: string;
+    title: string;
+    description: string;
+  }[];
   status: 'pending' | 'approved' | 'rejected';
   submittedAt: string;
 }
@@ -106,6 +113,13 @@ export interface TeamBioSubmission {
   about: string;
   profileImage?: string;
   applyForTopTeam: boolean;
+  memberCount?: number;
+  activists?: string[];
+  notableOps?: {
+    year: string;
+    opName: string;
+    impact: string;
+  }[];
   status: 'pending' | 'approved' | 'rejected';
   submittedAt: string;
 }

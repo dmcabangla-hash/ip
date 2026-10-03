@@ -134,10 +134,36 @@ export const SignInView: React.FC<SignInViewProps> = ({
             </div>
           </form>
 
-          {/* Quick Demo Credentials for Convenience */}
-          <div className="pt-4 border-t border-white/20 text-center text-xs text-white/70 space-y-1">
-            <p>Demo User: <span className="font-mono text-white">rajalamin@darkhub.com</span></p>
-            <p>Admin: <span className="font-mono text-white">admin@darkhub.com</span> (Pass: <span className="font-mono text-white">admin123</span>)</p>
+          {/* Quick Demo Credentials for Instant Testing */}
+          <div className="pt-4 border-t border-white/20 text-center text-xs text-white/80 space-y-2">
+            <span className="block font-bold uppercase tracking-wider text-[10px] text-white/90">
+              Quick Test Login (1-Click)
+            </span>
+            <div className="flex flex-col gap-1.5">
+              <button
+                type="button"
+                onClick={() => {
+                  setEmail('rajalamin@darkhub.com');
+                  setPassword('123456');
+                  onSignIn('rajalamin@darkhub.com', '123456');
+                }}
+                className="w-full py-1.5 px-2 bg-black/40 hover:bg-black/60 rounded text-[11px] font-bold text-white transition-colors"
+              >
+                Sign In as Raj Alamin (National Cyber Team)
+              </button>
+
+              <button
+                type="button"
+                onClick={() => {
+                  setEmail('raj.rdx@darkhub.com');
+                  setPassword('123456');
+                  onSignIn('raj.rdx@darkhub.com', '123456');
+                }}
+                className="w-full py-1.5 px-2 bg-black/40 hover:bg-black/60 rounded text-[11px] font-bold text-white transition-colors"
+              >
+                Sign In as Raj Alamin (RDX Zone)
+              </button>
+            </div>
           </div>
         </div>
       </div>

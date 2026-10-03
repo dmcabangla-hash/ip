@@ -1,10 +1,23 @@
 import React from 'react';
+import { SpammerProfile, TeamProfile } from '../types';
+
+export interface SearchSuggestionItem {
+  id: string;
+  type: 'spammer' | 'team';
+  name: string;
+  team: string;
+  formattedLabel: string; // e.g. "Raj Alamin - National Cyber Team"
+  spammer?: SpammerProfile;
+  teamProfile?: TeamProfile;
+}
 
 interface HeroPuppetSectionProps {
   searchQuery: string;
   onSearchChange: (query: string) => void;
   onSubmitSearch: () => void;
   onSelectCategory?: (category: string) => void;
+  suggestions?: SearchSuggestionItem[];
+  onSelectSuggestion?: (item: SearchSuggestionItem) => void;
 }
 
 export const HeroPuppetSection: React.FC<HeroPuppetSectionProps> = ({
@@ -12,7 +25,11 @@ export const HeroPuppetSection: React.FC<HeroPuppetSectionProps> = ({
   onSearchChange,
   onSubmitSearch,
   onSelectCategory,
+  suggestions = [],
+  onSelectSuggestion,
 }) => {
+  const hasSuggestions = searchQuery.trim().length > 0 && suggestions.length > 0;
+
   return (
     <section className="relative w-full bg-white select-none">
       {/* 1. Full-Width Top Red Bar with "Spammers" Badge on Far Left (Matches Image 1 exactly) */}
@@ -189,7 +206,7 @@ export const HeroPuppetSection: React.FC<HeroPuppetSectionProps> = ({
       </div>
 
       {/* 3. Typography & Search Area (Exact replica of Image 1) */}
-      <div className="max-w-xl mx-auto px-4 sm:px-6 pt-4 pb-12 text-center space-y-3.5">
+      <div className="max-w-xl mx-auto px-4 sm:px-6 pt-4 pb-12 text-center space-y-3.5 relative z-30">
         {/* Main Headline (Exact copy from Image 1) */}
         <h1 className="text-[27px] sm:text-[34px] md:text-[38px] font-black text-black tracking-tight leading-tight">
           We spammers never bow down
@@ -200,43 +217,103 @@ export const HeroPuppetSection: React.FC<HeroPuppetSectionProps> = ({
           Bring All Attackers Together
         </p>
 
-        {/* Search Box (Exact copy from Image 1) */}
-        <form
-          onSubmit={(e) => {
-            e.preventDefault();
-            onSubmitSearch();
-          }}
-          className="pt-2"
-        >
-          <div className="relative flex items-center bg-white rounded-xl border border-zinc-400 p-1.5 focus-within:border-black focus-within:ring-1 focus-within:ring-black transition-all shadow-2xs">
-            <input
-              type="text"
-              value={searchQuery}
-              onChange={(e) => onSearchChange(e.target.value)}
-              placeholder="Search your name or team"
-              className="w-full py-2.5 pl-3 pr-12 text-sm sm:text-base text-black placeholder:text-zinc-500 font-medium focus:outline-none bg-transparent"
-            />
+        {/* Search Box with Real-time Auto-Suggestions */}
+        <div className="pt-2 relative">
+          <form
+            onSubmit={(e) => {
+              e.preventDefault();
+              onSubmitSearch();
+            }}
+          >
+            <div className="relative flex items-center bg-white rounded-xl border border-zinc-400 p-1.5 focus-within:border-black focus-within:ring-1 focus-within:ring-black transition-all shadow-2xs">
+              <input
+                type="text"
+                value={searchQuery}
+                onChange={(e) => onSearchChange(e.target.value)}
+                placeholder="Search your name or team"
+                className="w-full py-2.5 pl-3 pr-12 text-sm sm:text-base text-black placeholder:text-zinc-500 font-medium focus:outline-none bg-transparent"
+              />
 
-            {/* Magnifying Glass Search Button Box on Right (Matches Image 1) */}
-            <button
-              type="submit"
-              aria-label="Search"
-              className="w-10 h-10 sm:w-11 sm:h-11 border border-zinc-400 rounded-lg flex items-center justify-center text-black hover:bg-zinc-100 active:scale-95 transition-all shrink-0"
-            >
-              <svg
-                className="w-6 h-6 stroke-current"
-                viewBox="0 0 24 24"
-                fill="none"
-                strokeWidth="2.5"
-                strokeLinecap="round"
-                strokeLinejoin="round"
+              {/* Magnifying Glass Search Button Box on Right (Matches Image 1) */}
+              <button
+                type="submit"
+                aria-label="Search"
+                className="w-10 h-10 sm:w-11 sm:h-11 border border-zinc-400 rounded-lg flex items-center justify-center text-black hover:bg-zinc-100 active:scale-95 transition-all shrink-0"
               >
-                <circle cx="10.5" cy="10.5" r="6.5" />
-                <line x1="21" y1="21" x2="15.5" y2="15.5" />
-              </svg>
-            </button>
-          </div>
-        </form>
+                <svg
+                  className="w-6 h-6 stroke-current"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  strokeWidth="2.5"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                >
+                  <circle cx="10.5" cy="10.5" r="6.5" />
+                  <line x1="21" y1="21" x2="15.5" y2="15.5" />
+                </svg>
+              </button>
+            </div>
+          </form>
+
+          {/* Real-time System Suggestions Dropdown: e.g. "Raj Alamin - National Cyber Team" & "Raj Alamin - RDX Zone" */}
+          {hasSuggestions && (
+            <div className="absolute left-0 right-0 top-full mt-1.5 bg-white border-2 border-black rounded-xl shadow-2xl overflow-hidden z-50 text-left divide-y divide-zinc-200 animate-in fade-in slide-in-from-top-1 duration-150">
+              <div className="bg-zinc-100 px-3.5 py-1.5 flex items-center justify-between text-[11px] font-bold text-zinc-600">
+                <span className="flex items-center gap-1.5">
+                  <span className="w-2 h-2 rounded-full bg-red-600 animate-pulse" />
+                  Suggestions / সার্চ ফলাফল ({suggestions.length})
+                </span>
+                <span className="text-[10px] text-zinc-500 font-normal">Click to open Spammer Wiki</span>
+              </div>
+
+              <div className="max-h-64 overflow-y-auto">
+                {suggestions.map((item) => (
+                  <button
+                    key={item.id}
+                    onClick={() => onSelectSuggestion && onSelectSuggestion(item)}
+                    className="w-full px-4 py-3 hover:bg-red-50 text-left transition-colors flex items-center justify-between group focus:outline-none focus:bg-red-50"
+                  >
+                    <div className="flex items-center gap-3">
+                      <div className="w-8 h-8 rounded-full overflow-hidden bg-zinc-200 border border-zinc-300 shrink-0 flex items-center justify-center">
+                        {item.type === 'spammer' ? (
+                          <img
+                            src={item.spammer?.avatarUrl || '/raj_alamin.png'}
+                            alt={item.name}
+                            className="w-full h-full object-cover"
+                            onError={(e) => {
+                              (e.target as HTMLElement).style.display = 'none';
+                            }}
+                          />
+                        ) : (
+                          <span className="text-xs font-black text-black">#</span>
+                        )}
+                      </div>
+
+                      <div>
+                        {/* The exact requested format: "Raj Alamin - National Cyber Team" */}
+                        <div className="text-sm sm:text-base font-black text-black group-hover:text-red-600 transition-colors">
+                          {item.formattedLabel}
+                        </div>
+                        <div className="text-xs text-zinc-500 flex items-center gap-2">
+                          <span className="uppercase font-bold tracking-wider text-[10px] text-red-600">
+                            {item.type === 'spammer' ? 'Spammer Dossier' : 'Cyber Team'}
+                          </span>
+                          {item.spammer?.activePeriod && (
+                            <span>· {item.spammer.activePeriod}</span>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+
+                    <span className="text-xs font-bold text-zinc-400 group-hover:text-red-600 group-hover:translate-x-1 transition-all shrink-0">
+                      Wiki →
+                    </span>
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
+        </div>
 
         {/* Bengali Manifesto Description (Exact copy from Image 1) */}
         <div className="pt-3 px-1">
